@@ -1,0 +1,21 @@
+<!-- filepath: c:\xampp\htdocs\b2c\template\views\auth_form.twig -->
+{% extends "layouts/_base.twig" %}
+
+{% block pageContent %}
+	<div class="container">
+		<div class="row justify-content-center" style="min-height: 100vh;">
+			<div class="col-md-6">
+				<form id="frmAuthCode" class="mt-5">
+					<h2 class="mb-3 text-center">Autenticación</h2>
+					<div class="mb-3">
+						<label for="authCode" class="form-label">Código de autenticación</label>
+						<input type="text" class="form-control" id="authCode" name="authCode" placeholder="Ingrese el código" required>
+					</div>
+					<div class="mb-3 text-center">
+						<button type="submit" class="btn btn-primary w-100">Enviar</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

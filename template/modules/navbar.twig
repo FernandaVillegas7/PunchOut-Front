@@ -1,0 +1,101 @@
+<div class="container-fluid navbarTop sticky-top mb-3" style="padding: 0; margin: 0;">
+    <div class="row align-items-center bg-light py-3 px-xl-5 d-none d-lg-flex">
+        <!-- Logo -->
+        <div class="col-lg-4">
+            <a href="index" class="text-decoration-none">
+                <img src="public/img/logo_merosol.png" alt="Logo" class="logo" style="height: 4rem;">
+            </a>
+        </div>
+        <!-- Información del cliente alineada a la derecha -->
+        <div class="col-lg-8 text-end">
+            {# <p class="m-0">Bienvenido: {{ Nombre }}</p> #}
+			<p class="m-0">Bienvenido</p>
+			{# <p class="m-0">Lugar de entrega: {{ PlantaSeleccionadaNombre }}</p> #}
+			{# TODO: AGREGAR UN CONTECTO DINAMICO O FIJO, PERO QUE FUNCIONE #}
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid navActions bg-danger" style="position: relative; display: block; padding: 0; margin: 0; height: 3rem;">
+	<div class="row px-xl-5">
+		<div class="col-lg-3 d-none d-lg-block">&nbsp;</div>
+
+		<div class="col-lg-9">
+			<nav aria-label="??" class="navbar navbar-expand-lg bg-danger navbar-dark py-3 py-lg-0 px-0" style="height: 3rem; padding: 0 30px;">
+				<button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+					<div class="navbar-nav mr-auto py-0">
+						<a href="index" class="nav-item nav-link" id="link-inicio">Inicio</a>
+						<a href="shop" class="nav-item nav-link" id="link-tienda">Tienda</a>
+						<a href="cotizar" class="nav-item nav-link" id="link-tienda">Compra rápida</a>
+						<a href="cotizar" class="nav-item nav-link" id="link-tienda">Mis compras</a>
+					</div>
+
+					<!-- Botón de Logout -->
+					{# <div class="navbar-nav ms-auto py-0 d-flex align-items-center gap-3">
+						<select id="selectPlanta" class="form-select" style="width: 250px;">
+							<option value="" disabled selected>Selecciona lugar de entrega</option>
+						</select>
+					</div> #}
+				</div>
+
+				<div class="navbar-nav ms-auto py-0 d-none d-lg-flex align-items-center gap-3">
+					<a href="carrito" class="btn px-2 position-relative">
+						<i class="fas fa-shopping-cart text-light fs-5"></i>
+						<span id="TotalCarrito" class="badge bg-white text-black rounded-circle position-absolute top-0 start-100 translate-middle">
+							0
+						</span>
+					</a>
+					
+					<a href="form" class="btn px-2 mx-2" id="soporte-btn">
+						<i class="fas fa-headset text-light fs-5"></i>
+					</a>
+
+					{# TODO: RECUERDAME REDIRIGIR A LA SECCION DE PERFIL #}
+					{# <a href="perfil" class="btn px-2" id="perfil-btn">
+						<i class="fas fa-user text-light fs-5"></i>
+					</a> #}
+
+					<!-- Botón de Logout movido aquí -->
+					<a href="logout.php" class="btn btn-danger text-white">
+						<i class="fas fa-sign-out-alt"></i>
+						Cerrar sesión
+					</a>
+				</div>
+
+			</nav>
+		</div>
+	</div>
+</div></div>
+{# {% block extraScripts %} #}
+{# <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{'public/js/src/navActions.js'|filemtime_version}}"></script> #}
+{# {% endblock %} #}
+
+<script>
+// // Actualiza el badge del carrito usando jQuery $.ajax, la sesión se valida en el servidor
+// (function(){
+// 	function setBadge(n){
+// 		var el = document.getElementById('TotalCarrito');
+// 		if (el) { el.textContent = String(n || 0); }
+// 	}
+// 	var fm = {}; // payload vacío; la sesión se resuelve en servidor
+// 	if (window.jQuery) {
+// 		$.ajax({
+// 			type: 'GET',
+// 			url: 'app/api/exiros.php?method=totalCarritoCount',
+// 			data: JSON.stringify(fm),
+// 			contentType: 'application/json',
+// 			success: function(res){
+// 				var n = (res && res.data && typeof res.data.total === 'number') ? res.data.total : 0;
+// 				setBadge(n);
+// 			},
+// 			error: function(){ setBadge(0); }
+// 		});
+// 	}
+// })();
+</script>

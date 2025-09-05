@@ -1,0 +1,99 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="index">Inicio</a>
+                <a class="breadcrumb-item text-dark" href="shop">Tienda</a>
+                <span class="breadcrumb-item active">Detalles del producto</span>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid pb-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-5 mb-30">
+            <div id="product-details" class="carousel slide" data-ride="carousel">
+                <div class="prduct-details">
+                    <img id="product-img" class="img-fluid w-100" src="" alt="" style="aspect-ratio: 1/1;">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7 h-auto mb-30">
+            <div class="h-100 p-30">
+                <h3>
+                    <span id="product-longName"></span> - <span id="product-manufacturer"></span>
+                </h3>
+                <h3 class="font-weight-semi-bold mb-4">
+                    $<span id="product-amount"></span> <span id="product-currency"></span>
+                </h3>
+                <p>
+                    <span id="product-shortName"></span>
+                    <br>
+                    <small>Código: <span id="product-codigoInterno"></span></small>
+                </p>
+
+                <form id="frmProducto">
+                    <input type="hidden" name="codigo" id="input-codigo">
+                    <input type="hidden" name="nombre" id="input-nombre">
+                    <input type="hidden" name="precio" id="input-precio">
+                    <input type="hidden" name="articulo" id="input-articulo">
+
+                    <div class="d-flex align-items-center mb-4 pt-2">
+                        <div class="row">
+                            <div class="col-md-4 quantity">
+                                <div class="input-group mb-3 pt-2">
+                                    <button class="btn btn-outline-danger btn-minus" type="button" id="button-addon1">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                    <input type="text" name="totalProducto" id="totalProducto" class="form-control text-center" placeholder="" aria-label="Cantidad" value="1" aria-describedby="button-addon1">
+                                    <button class="btn btn-outline-danger btn-plus" type="button" id="button-addon2">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-8">
+                                <button class="btn btn-danger px-3 ml-4" id="btAddCar">
+                                    <i class="fas fa-cart-plus "></i>
+                                    Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <div class="nav nav-tabs mb-4 text-white">
+                        <a class="nav-item nav-link  active border " data-toggle="tab" href="#tab-pane-1">
+                            Detalles
+                        </a>
+                    </div>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tab-pane-1">
+                            <h4 class="mb-3">
+                                <span id="product-longName-2"></span> - <span id="product-manufacturer-2"></span>
+                            </h4>
+                            <p>
+                                <span id="product-shortName-2"></span>
+                            </p>
+                        </div>
+                        <div class="tab-pane fade" id="tab-pane-3"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extraScripts %}
+    {{ parent() }}
+    <script src="{{'public/js/src/producto.js'|filemtime_version}}"></script>
+{% endblock %}

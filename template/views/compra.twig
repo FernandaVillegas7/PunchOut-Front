@@ -1,0 +1,278 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}  
+    <!-- Breadcrumb Start -->
+    <div class="container-fluid">
+        {# <div class="row px-xl-5">
+            <div class="col-12">
+                <nav class="breadcrumb bg-light mb-30">
+                    <a class="breadcrumb-item text-dark" href="#">Inicio</a>
+                    <a class="breadcrumb-item text-dark" href="#">Tienda</a>
+                    <span class="breadcrumb-item active">Informacion de pago</span>
+                </nav>
+            </div>
+        </div> #}
+    <div class="card shadow-lg">
+        <div class="card-body text-center">
+            <i class="fas fa-shopping-cart fa-4x text-danger  mb-3"></i>
+            <h5 class="card-title">¡Gracias por tu compra!</h5>
+            <p class="lead">¡Estamos encantados de que hayas elegido nuestra tienda!</p>
+            <p>Tu compra ha sido procesada correctamente. A continuación, los detalles de tu entrega:</p>
+            <ul class="list-unstyled">
+                <li><strong>Fecha estimada de entrega:</strong> 10 de abril de 2025</li>
+                <li><strong>Dirección de envío:</strong> Calle Ficticia 123, Ciudad, País</li>
+                <li><strong>Seguimiento:</strong> Tu número de seguimiento es: 1234567890</li>
+            </ul>
+            <p>Gracias por confiar en nosotros, ¡esperamos que disfrutes de tu compra!</p>
+        </div>
+    </div>
+    </div>
+    <!-- Breadcrumb End -->
+
+
+    <!-- Checkout Start -->
+    {# <div class="container-fluid">
+        <div class="row px-xl-5">
+            <div class="col-lg-8">
+                <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Filtrar producto</span></h5>
+                <div class="bg-light p-30 mb-5">
+                    <div class="container mt-4"> #}
+                        <!-- Sección de Referencia Cliente -->
+                        {# <h3 class="text-center mb-3">Referencia Cliente</h3>
+                        <div class="row mb-4  border p-3 rounded shadow-sm">
+                            <div class="col-md-6 form-group">
+                                <div class="mb-3">
+                                    <label for="empresa" class="form-label">Nombre Empresa</label>
+                                    <input type="text" class="form-control" id="empresa" placeholder="EMPRESA SA DE CV">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="frc" class="form-label">FRC</label>
+                                    <input type="text" class="form-control" id="frc" placeholder="XXXXXXXXXXXX">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="contacto" class="form-label">Contacto</label>
+                                    <input type="text" class="form-control" id="contacto" placeholder="Contacto Uno">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <div class="mb-3">
+                                    <label for="telefonos" class="form-label">Teléfonos</label>
+                                    <input type="text" class="form-control" id="telefonos" placeholder="(Número de teléfonos)">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" placeholder="empresa@email.com">
+                                </div>
+                            </div>
+                        </div> #}
+
+
+                        <!-- Sección de Datos Adicionales -->
+                        
+                            {# <h3 class="text-center mb-3">Datos Adicionales</h3>
+                        <div class="row mb-4 border p-3 rounded shadow-sm">  
+                            <div class="col-md-6 form-group ">
+                                <div class="mb-3">
+                                    <label for="envio" class="form-label">Envío</label>
+                                    <select class="form-control" id="envio">
+                                        <option value="">Selecciona una opción de envío</option>
+                                        <option value="estandar">Envío Estándar</option>
+                                        <option value="express">Envío Exprés</option>
+                                        <option value="internacional">Envío Internacional</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 form-group">
+                                <div class="mb-3">
+                                    <label for="fecha" class="form-label">Fecha Requerida</label>
+                                    <input type="date" class="form-control" id="fecha">
+                                </div>
+                            </div>
+                            
+                                <div class="mb-3 col-md-12">
+                                    <label for="observaciones" class="form-label">Observaciones</label>
+                                    <textarea class="form-control" id="observaciones" rows="1" placeholder="(Observaciones)"></textarea>
+                                </div>
+                                <div class="col-md-6 form-group ">
+                                    <label for="motivo" class="form-label">Motivo o Uso</label>
+                                    <select class="form-control" id="envio">
+                                            <option value="">Selecciona una opción</option>
+                                            <option value="estandar">Envío Estándar</option>
+                                            <option value="express">Envío Exprés</option>
+                                            <option value="internacional">Envío Internacional</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 ">
+                                    <label for="pdf" class="form-label">PDF</label>
+                                    <input type="file" class="form-control" id="pdf" />
+                                </div>
+                            </div>
+                    </div> #}
+
+                                        {# <div class="col-md-6 form-group">
+                                            <label>Nombres</label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Apellidos</label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Correo electronico</label>
+                                            <input class="form-control" type="text" >
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Cel.</label>
+                                            <input class="form-control" type="text" >
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Direccion 1</label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Direccion 2</label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Estado</label>
+                                            <select class="custom-select">
+                                                <option selected>Tabasco</option>
+                                                <option>Yucatan</option>
+                                                <option>Nuevo Leon</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Ciudad</label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label>Codigo postal</label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="newaccount">
+                                                <label class="custom-control-label" for="newaccount">Crear cuenta</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="shipto">
+                                                <label class="custom-control-label" for="shipto"  data-toggle="collapse" data-target="#shipping-address">Enviar a una dirección diferente</label>
+                                            </div>
+                                        </div> #}
+
+                                    
+                                {# </div>
+                                <div class="collapse mb-5" id="shipping-address">
+                                    <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Shipping Address</span></h5>
+                                    <div class="bg-light p-30">
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <label>Nombre</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Apellido</label>
+                                                <input class="form-control" type="text" >
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Correo</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Cel.</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Direccion 1</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Direccion 2</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Estado</label>
+                                                <select class="custom-select">
+                                                    <option selected>Tabasco</option>
+                                                    <option>Nuevo Leon</option>
+                                                    <option>Yucatan</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>City</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <label>Codigo postal</label>
+                                                <input class="form-control" type="text">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Order Total</span></h5>
+                                <div class="bg-light p-30 mb-5">
+                                    <div class="border-bottom">
+                                        <h6 class="mb-3">Productos</h6>
+                                        <div class="d-flex justify-content-between">
+                                            <p>Nombre de producto 1</p>
+                                            <p>$150</p>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <p>Nombre de producto 2</p>
+                                            <p>$150</p>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <p>Nombre de producto 3</p>
+                                            <p>$150</p>
+                                        </div>
+                                    </div>
+                                    <div class="border-bottom pt-3 pb-2">
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <h6>Subtotal</h6>
+                                            <h6>$150</h6>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="font-weight-medium">IVA</h6>
+                                            <h6 class="font-weight-medium">$10</h6>
+                                        </div>
+                                    </div>
+                                    <div class="pt-2">
+                                        <div class="d-flex justify-content-between mt-2">
+                                            <h5>Total</h5>
+                                            <h5>$160</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-5">
+                                    <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Metodo de Pago</span></h5>
+                                    <div class="bg-light p-30">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input ms-3" name="payment" id="paypal">
+                                                <label class="custom-control-label" for="paypal">Paypal</label>
+                                                <i class="fa-brands fa-paypal ms-3"></i>
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-4">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" name="payment" id="banktransfer">
+                                                <label class="custom-control-label" for="banktransfer">Tranferencia bancaria</label>
+                                                <i class="fa-regular fa-credit-card"></i>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-block btn-secondary font-weight-bold py-3">Comprar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> #}
+                <!-- Checkout End -->
+    </div>
+
+{% endblock %}

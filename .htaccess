@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+
+RewriteRule . - [L]
+# RewriteRule ^login$ login.html
+RewriteRule ^api/(.*)$ app/index.php
+RewriteRule ^([-a-zA-Z0-9/]+)$ index.php?view=$1 [QSA,L]
+
+</IfModule>

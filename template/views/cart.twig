@@ -1,0 +1,183 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="index">Inicio</a>
+                <a class="breadcrumb-item text-dark" href="shop">Tienda</a>
+                <span class="breadcrumb-item active">Carrito</span>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <h5 class="section-title position-relative mb-4 mx-5">
+        <span class="pr-3">
+            Productos seleccionados
+        </span>
+    </h5>
+    <div class="row px-xl-5">
+        <div class="col-lg-8 table-responsive mb-3">
+            <div id="listaArticulos">
+               <div style="max-height: 25rem; overflow-y: auto;">
+                    <table class="table table-borderless table-hover text-center mb-0" id="tbListItems">
+                        <thead class="border sticky-top bg-white">
+                            <tr>
+                                <th>Productos</th>
+                                <th class="border">Precio</th>
+                                <th>Cantidad</th>
+                                <th class="border">Total</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="align-middle" id="extras">
+                            {% set subTotal = 0 %}
+                            {% set iva = 0 %}
+                            {% set granTotal = 0 %}
+                            {% for i in itemsList %}
+                            {% set total = (i.Cantidad * i.Precio) %}
+                            {% set subTotal = subTotal + total %}
+                            <tr>
+                                <td class="text-start">
+                                    <div class="row">
+                                        <div class="img-fluid col-md-2">
+                                            <img alt="" src="https://mersolsureste.com.mx/articulos/index.php?clave={{i.CodigoProducto}}&img={{i.Articulo}}" style="width: 50px;">
+                                        </div>
+                                        <div class="col-md-8 text-">
+                                            {{i.NombreProducto}}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    $ {{ i.Precio|number_format(2, '.', '') }}
+                                </td>
+                                <td class="align-middle col-md-2">
+
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="item{{i.CarritoID}}" aria-label="cantidad" value="{{i.Cantidad}}" readonly>
+                                        <button class="btn btn-outline-primary btEdit edit{{i.CarritoID}}" data-item="{{i.CarritoID}}" type="button">
+                                            <i class="fa-solid fa-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary driveRush{{i.CarritoID}}" type="button" style="display: none;">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger driveRush{{i.CarritoID}}" type="button" style="display: none;">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="align-middle">$ {{total|number_format(2, '.', '')}}</td>
+                                <td class="align-middle">
+                                    <button class="btn btn-sm btn-outline-danger dropItem" data-id="{{i.CarritoID}}">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-30 my-5">
+                <h3 class="text-center mb-3">Datos Adicionales</h3>
+                <div class="row mb-4 border p-3 rounded shadow-sm">
+                    <div class="col-md-6 form-group ">
+                        <div class="mb-3">
+                            <label for="envio" class="form-label">Envío</label>
+                            <select class="form-control" id="envio">
+                                <option value="">Selecciona una opción de envío</option>
+                                <option value="estandar">Envío Estándar</option>
+                                <option value="express">Envío Exprés</option>
+                                <option value="internacional">Envío Internacional</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label">Fecha Requerida</label>
+                            <input type="date" class="form-control" id="fecha">
+                        </div>
+                    </div>
+
+                    <div class="mb-3 col-md-12">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" rows="1"
+                            placeholder="(Observaciones)"></textarea>
+                    </div>
+                    <div class="col-md-6 form-group ">
+                        <label for="motivo" class="form-label">Almacen Cliente</label>
+                        <select class="form-control" id="envio">
+                            <option value="">Selecciona un almacen</option>
+                            <option value="estandar">Envío Estándar</option>
+                            <option value="express">Envío Exprés</option>
+                            <option value="internacional">Envío Internacional</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 ">
+                        <label for="pdf" class="form-label">Subir OC</label>
+                        <input type="file" class="form-control" id="pdf" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <h5 class="section-title position-relative text-uppercase mt-4 mb-3">
+                <span class=" pr-3">
+                    Resumen del carrito
+                </span>
+            </h5>
+
+            <div class="p-30 mb-5">
+                <div class="border-bottom pb-2">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h6>Subtotal</h6>
+                        <h6>$ {{subTotal}}</h6>
+                    </div>
+
+                    {% set iva = subTotal * 0.16 %}
+                    <div class="d-flex justify-content-between">
+                        <h6 class="font-weight-medium">IVA</h6>
+                        <h6 class="font-weight-medium">$ {{iva}}</h6>
+                    </div>
+                </div>
+                {% set granTotal = subTotal + iva %}
+                <div class="pt-2">
+                    <div class="d-flex justify-content-between mt-2">
+                        <h5>Total</h5>
+                        <h5>$ {{granTotal}}</h5>
+                    </div>
+                    <a href="compra">
+                        <button class="btn btn-danger fw-bold my-3 w-100">
+                            Enviar Pedido
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+                                {# <div class="input-group quantity mx-auto" style="width: 100px;">
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-sm btn-secondary btn-minus">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" class="form-control form-control-sm  border-0 text-center" value="{{i.Cantidad}}">
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-sm btn-secondary btn-plus">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div> #}
+

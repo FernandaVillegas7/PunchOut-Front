@@ -1,0 +1,172 @@
+{% extends "layouts/blank.twig" %}
+
+{% block pageContent %}
+	<section class="logout-page d-flex align-items-center justify-content-center">
+		<div class="logout-container">
+			<div class="logout-card shadow-lg text-center">
+				<div class="logout-brand mb-3">
+					{% if logoUrl is defined and logoUrl %}
+						<img src="{{ logoUrl }}" alt="{{ brandName|default('Mersol Sureste') }}" class="logout-logo">
+					{% else %}
+						<span class="logout-brand-text">{{ brandName|default('MERSOL SURESTE') }}</span>
+                        </br>
+					{% endif %}
+				</div>
+
+				<div class="logout-icon" aria-hidden="true">
+
+					<svg width="68" height="68" viewbox="0 0 24 24" fill="none" role="img" aria-label="Sesión cerrada">
+						<path d="M12 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+						<path d="M18.36 6.64a8 8 0 11-12.72 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+					</svg>
+				</div>
+
+
+				<h1 class="logout-title mb-2">Sesión cerrada</h1>
+				<p class="logout-subtitle mb-2">Has salido de tu cuenta de forma segura.</p>
+				<p class="logout-thanks mb-4">¡Gracias por tu visita a nuestro portal! Esperamos verte pronto de nuevo.</p>
+
+			</div>
+		</div>
+	</section>
+
+
+	<style>
+		@font-face {
+			font-family: 'HalenoirText';
+			src: url('../public/assets/fonts/halenoir/HalenoirText-Regular.otf') format('opentype');
+			font-weight: normal;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		:root {
+			--logout-rojo: #e50914;
+			--logout-negro: #0b0d10;
+			--logout-gris-osc: #1f2937;
+			--logout-gris: #9ca3af;
+			--logout-blanco: #ffffff;
+		}
+
+
+		.logout-page {
+			font-family: 'HalenoirText', Arial, Helvetica, sans-serif;
+		min-height: 100vh;
+		min-width: 100vw;
+		width: 100vw;
+		height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: radial-gradient(1000px 500px at 10% 10%, #111 0%, transparent 60%), radial-gradient(800px 400px at 90% 0%, rgba(229, 9, 20, 0.15) 0%, transparent 60%), linear-gradient(180deg, #0b0d10 0%, #111 100%);
+		color: var(--logout-blanco);
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 1000;
+	}
+
+	.logout-container {
+		width: 100vw;
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2.5rem 0;
+	}
+
+		.logout-card {
+			position: relative;
+			max-width: 560px;
+			width: 100%;
+			padding: 2.5rem 2rem;
+			border-radius: 1rem;
+			background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+			border: 1px solid rgba(255, 255, 255, .08);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(255, 255, 255, .04);
+			text-align: center;
+		}
+
+	.logout-card::before {
+		content: "";
+		position: absolute;
+		inset: -1px;
+		border-radius: 1rem;
+		padding: 1px;
+		background: linear-gradient(135deg, rgba(229,9,20,.55), rgba(255,255,255,.08), rgba(229,9,20,.35));
+		-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		pointer-events: none;
+	}
+
+
+		.logout-brand {
+			margin-bottom: 2.2rem !important;
+		}
+		.logout-brand-text {
+			letter-spacing: 0.18em;
+			font-weight: 700;
+			color: var(--logout-gris);
+		}
+
+	.logout-logo {
+		height: 36px;
+		object-fit: contain;
+		filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+	}
+
+	.logout-icon {
+		width: 96px;
+		height: 96px;
+		margin: 0 auto 1rem;
+		display: grid;
+		place-items: center;
+		color: var(--logout-rojo);
+		background: radial-gradient(closest-side, rgba(229,9,20,.15), transparent);
+		border-radius: 999px;
+		border: 1px solid rgba(229, 9, 20, .35);
+		box-shadow: 0 8px 30px rgba(229, 9, 20, .25);
+	}
+
+	.logout-title {
+		font-size: clamp(1.5rem, 3vw, 2rem);
+		font-weight: 700;
+	}
+
+
+	.logout-subtitle {
+		color: var(--logout-gris);
+		font-size: 1.1rem;
+	}
+
+	.logout-thanks {
+		color: var(--logout-blanco);
+		font-size: 1.08rem;
+		font-weight: 500;
+		letter-spacing: 0.01em;
+		margin-bottom: 1.5rem;
+	}
+
+	.btn-danger {
+		background-color: var(--logout-rojo);
+		border-color: var(--logout-rojo);
+	}
+	.btn-danger:hover {
+		filter: brightness(1.08);
+	}
+	.btn-outline-light {
+		border-color: rgba(255, 255, 255, .35);
+		color: var(--logout-blanco);
+	}
+	.btn-outline-light:hover {
+		background: rgba(255, 255, 255, .08);
+		border-color: rgba(255, 255, 255, .6);
+	}
+
+	.logout-muted {
+		color: var(--logout-gris);
+		font-size: 0.95rem;
+	}
+</style>{% endblock %}{% block extraScripts %}
+{% endblock %}

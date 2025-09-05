@@ -1,0 +1,10 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}
+
+{% endblock %}
+
+{% block extraScripts %}
+    {{ parent() }}
+    <script src="{{'public/js/src/exiros.js'|filemtime_version}}"></script>
+{% endblock %}

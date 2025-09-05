@@ -1,0 +1,258 @@
+Array
+(
+    [categorias] => Array
+        (
+        )
+
+    [sucursales] => Array
+        (
+            [0] => Array
+                (
+                    [Sucursal] => VILLAHERMOSA
+                    [Domicilio] => Av. Ruiz Cortines #2001, Col. Atasta. C.P. 86100. Villahermosa, Tabasco.
+                    [Telefono] => 9931614479
+                    [url] => villahermosa
+                )
+
+            [1] => Array
+                (
+                    [Sucursal] => PARAISO
+                    [Domicilio] => Carretera Paraíso – Dos Bocas KM 1 S/N. Col. El limón, C.P. 86600. Paraíso, Tabasco.
+                    [Telefono] => 9333334564
+                    [url] => paraiso
+                )
+
+            [2] => Array
+                (
+                    [Sucursal] => VERACRUZ
+                    [Domicilio] => Calz. Manuel de Jesús Clouthier #5417 L-15 Col. Amapolas, C.P. 91698. Veracruz, Ver.
+                    [Telefono] => 2292608910
+                    [url] => veracruz
+                )
+
+            [3] => Array
+                (
+                    [Sucursal] => APODACA
+                    [Domicilio] => Regioavenida No. 116, Regio Parque Industrial, C.P. 66632. Cd. Apodaca, N.L.
+                    [Telefono] => 8181231164
+                    [url] => apodaca
+                )
+
+            [4] => Array
+                (
+                    [Sucursal] => VALLADOLID
+                    [Domicilio] => Av. 42 # 216-D, Col. San Juan, C.P. 97783. Valladolid, Yucatán.
+                    [Telefono] => 9851193953
+                    [url] => valladolid
+                )
+
+            [5] => Array
+                (
+                    [Sucursal] => TULA
+                    [Domicilio] => Ctra. Federal Tula – Refinería Kilómetro 4.5, El Llano 2da Sección, C.P. 42803. Tula de Allende, Hidalgo.
+                    [Telefono] => 7736882091
+                    [url] => tula
+                )
+
+            [6] => Array
+                (
+                    [Sucursal] => MERIDA
+                    [Domicilio] => Circuito Colonias 431, Mercedes Barrera, C.P. 97270 Mérida, Yucatán.
+                    [Telefono] => 7832610998
+                    [url] => merida
+                )
+
+            [7] => Array
+                (
+                    [Sucursal] => SALINA CRUZ
+                    [Domicilio] => Av. Ferrocarril #702, Col. Miguel Hidlago Poniente C.P. 70610 Salina Cruz, Oaxaca.
+                    [Telefono] => 9719800344
+                    [url] => salina-cruz
+                )
+
+            [8] => Array
+                (
+                    [Sucursal] => TUXPAN
+                    [Domicilio] => Calle Venustiano Carranza 5, Adolfo Ruiz Cortines, 92880 Túxpan de Rodríguez Cano, Ver.
+                    [Telefono] => 7832610998
+                    [url] => tuxpan
+                )
+
+        )
+
+    [clienteID] => 1
+)
+Array
+(
+    [categorias] => Array
+        (
+        )
+
+    [sucursales] => Array
+        (
+            [0] => Array
+                (
+                    [Sucursal] => VILLAHERMOSA
+                    [Domicilio] => Av. Ruiz Cortines #2001, Col. Atasta. C.P. 86100. Villahermosa, Tabasco.
+                    [Telefono] => 9931614479
+                    [url] => villahermosa
+                )
+
+            [1] => Array
+                (
+                    [Sucursal] => PARAISO
+                    [Domicilio] => Carretera Paraíso – Dos Bocas KM 1 S/N. Col. El limón, C.P. 86600. Paraíso, Tabasco.
+                    [Telefono] => 9333334564
+                    [url] => paraiso
+                )
+
+            [2] => Array
+                (
+                    [Sucursal] => VERACRUZ
+                    [Domicilio] => Calz. Manuel de Jesús Clouthier #5417 L-15 Col. Amapolas, C.P. 91698. Veracruz, Ver.
+                    [Telefono] => 2292608910
+                    [url] => veracruz
+                )
+
+            [3] => Array
+                (
+                    [Sucursal] => APODACA
+                    [Domicilio] => Regioavenida No. 116, Regio Parque Industrial, C.P. 66632. Cd. Apodaca, N.L.
+                    [Telefono] => 8181231164
+                    [url] => apodaca
+                )
+
+            [4] => Array
+                (
+                    [Sucursal] => VALLADOLID
+                    [Domicilio] => Av. 42 # 216-D, Col. San Juan, C.P. 97783. Valladolid, Yucatán.
+                    [Telefono] => 9851193953
+                    [url] => valladolid
+                )
+
+            [5] => Array
+                (
+                    [Sucursal] => TULA
+                    [Domicilio] => Ctra. Federal Tula – Refinería Kilómetro 4.5, El Llano 2da Sección, C.P. 42803. Tula de Allende, Hidalgo.
+                    [Telefono] => 7736882091
+                    [url] => tula
+                )
+
+            [6] => Array
+                (
+                    [Sucursal] => MERIDA
+                    [Domicilio] => Circuito Colonias 431, Mercedes Barrera, C.P. 97270 Mérida, Yucatán.
+                    [Telefono] => 7832610998
+                    [url] => merida
+                )
+
+            [7] => Array
+                (
+                    [Sucursal] => SALINA CRUZ
+                    [Domicilio] => Av. Ferrocarril #702, Col. Miguel Hidlago Poniente C.P. 70610 Salina Cruz, Oaxaca.
+                    [Telefono] => 9719800344
+                    [url] => salina-cruz
+                )
+
+            [8] => Array
+                (
+                    [Sucursal] => TUXPAN
+                    [Domicilio] => Calle Venustiano Carranza 5, Adolfo Ruiz Cortines, 92880 Túxpan de Rodríguez Cano, Ver.
+                    [Telefono] => 7832610998
+                    [url] => tuxpan
+                )
+
+        )
+
+    [clienteID] => 1
+    [cliente] => VMTY-00075
+)
+Array
+(
+    [categorias] => Array
+        (
+        )
+
+    [sucursales] => Array
+        (
+            [0] => Array
+                (
+                    [Sucursal] => VILLAHERMOSA
+                    [Domicilio] => Av. Ruiz Cortines #2001, Col. Atasta. C.P. 86100. Villahermosa, Tabasco.
+                    [Telefono] => 9931614479
+                    [url] => villahermosa
+                )
+
+            [1] => Array
+                (
+                    [Sucursal] => PARAISO
+                    [Domicilio] => Carretera Paraíso – Dos Bocas KM 1 S/N. Col. El limón, C.P. 86600. Paraíso, Tabasco.
+                    [Telefono] => 9333334564
+                    [url] => paraiso
+                )
+
+            [2] => Array
+                (
+                    [Sucursal] => VERACRUZ
+                    [Domicilio] => Calz. Manuel de Jesús Clouthier #5417 L-15 Col. Amapolas, C.P. 91698. Veracruz, Ver.
+                    [Telefono] => 2292608910
+                    [url] => veracruz
+                )
+
+            [3] => Array
+                (
+                    [Sucursal] => APODACA
+                    [Domicilio] => Regioavenida No. 116, Regio Parque Industrial, C.P. 66632. Cd. Apodaca, N.L.
+                    [Telefono] => 8181231164
+                    [url] => apodaca
+                )
+
+            [4] => Array
+                (
+                    [Sucursal] => VALLADOLID
+                    [Domicilio] => Av. 42 # 216-D, Col. San Juan, C.P. 97783. Valladolid, Yucatán.
+                    [Telefono] => 9851193953
+                    [url] => valladolid
+                )
+
+            [5] => Array
+                (
+                    [Sucursal] => TULA
+                    [Domicilio] => Ctra. Federal Tula – Refinería Kilómetro 4.5, El Llano 2da Sección, C.P. 42803. Tula de Allende, Hidalgo.
+                    [Telefono] => 7736882091
+                    [url] => tula
+                )
+
+            [6] => Array
+                (
+                    [Sucursal] => MERIDA
+                    [Domicilio] => Circuito Colonias 431, Mercedes Barrera, C.P. 97270 Mérida, Yucatán.
+                    [Telefono] => 7832610998
+                    [url] => merida
+                )
+
+            [7] => Array
+                (
+                    [Sucursal] => SALINA CRUZ
+                    [Domicilio] => Av. Ferrocarril #702, Col. Miguel Hidlago Poniente C.P. 70610 Salina Cruz, Oaxaca.
+                    [Telefono] => 9719800344
+                    [url] => salina-cruz
+                )
+
+            [8] => Array
+                (
+                    [Sucursal] => TUXPAN
+                    [Domicilio] => Calle Venustiano Carranza 5, Adolfo Ruiz Cortines, 92880 Túxpan de Rodríguez Cano, Ver.
+                    [Telefono] => 7832610998
+                    [url] => tuxpan
+                )
+
+        )
+
+    [clienteID] => 1
+)
+Array
+(
+    [usuario] => mosquedaaxel1@gmail.com
+    [userPass] => capibara
+)

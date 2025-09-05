@@ -1,0 +1,46 @@
+{% extends "layouts/sysError.twig" %}
+
+{% block content %}
+<style>
+	.error-500 {
+		position: relative;
+		min-height: 75vh;
+		display: grid;
+		place-items: center;
+		padding: 3rem 1rem;
+		font-family: 'Halenoir', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		background:
+			radial-gradient(80rem 40rem at 10% -10%, rgba(220,53,69,.06), transparent 60%),
+			radial-gradient(70rem 30rem at 110% 10%, rgba(255,77,79,.06), transparent 60%),
+			linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.02));
+	}
+	.error-500 .wrap { width: min(960px, 100%); text-align: center; }
+	.error-500 .code { font-size: clamp(56px, 10vw, 128px); font-weight: 800; letter-spacing: .06em; margin: 0 0 .5rem; background: linear-gradient(45deg, #dc3545, #ff4d4f, #c1121f); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 8px 24px rgba(220,53,69,.25); }
+	.error-500 .title { font-size: clamp(18px, 3vw, 30px); font-weight: 700; margin: 0 0 .75rem; color: #3b0f12; }
+	.error-500 .desc { font-size: clamp(14px, 2.2vw, 18px); color: #5c2b2b; margin: 0 auto 1.25rem; max-width: 60ch; }
+	.error-500 .img-wrap { margin: 1rem auto 1.5rem; display: inline-block; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.12); background: #fff; }
+	.error-500 .img-wrap img { display: block; max-width: 100%; height: auto; }
+	.error-500 .back-link { display: inline-block; margin-top: .5rem; color: #b02a37; text-decoration: underline; }
+	.error-500 .hint { color: #6b7785; font-size: 13px; margin-top: .5rem; }
+	@media (prefers-color-scheme: dark) {
+		.error-500 { background: radial-gradient(80rem 40rem at 10% -10%, rgba(220,53,69,.12), transparent 60%), radial-gradient(70rem 30rem at 110% 10%, rgba(255,77,79,.10), transparent 60%), linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.03)); }
+		.error-500 .title { color: #ffdadd; }
+		.error-500 .desc { color: #ffb3b8; }
+		.error-500 .back-link { color: #ff8f99; }
+	}
+</style>
+
+<section class="error-500">
+	<div class="wrap">
+		<div class="code" aria-hidden="true">500</div>
+		<h1 class="title">Error interno del servidor</h1>
+		<p class="desc">{{ Message }}</p>
+		<div class="img-wrap">
+			<img src="https://http.cat/images/500.jpg" alt="Error 500" loading="lazy">
+		</div>
+		<a class="back-link" href="index">Regresar</a>
+		<div class="hint">Código: 500 • Si el problema persiste, contacta a tu asesor o soporte.</div>
+	</div>
+</section>
+
+{% endblock %}

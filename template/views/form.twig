@@ -1,0 +1,37 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}
+<div class="container mt-5">
+    <h2>Atención al cliente</h2>
+    <p class="text-muted">
+        ¿Tienes problemas con la página? ¿Dudas, comentarios o quejas? ¡Cuéntanos! Tus comentarios son importantes para nosotros y nos ayudan a mejorar. Si tienes problemas con la pagina, nos pondremos en contacto contigo lo más pronto posible para resolver tu situación.
+    </p>
+    <p class="text-muted">
+        Tus comentarios y datos serán tratados de forma privada y anónima. Nos comprometemos a proteger tu información y utilizarla únicamente para mejorar nuestro servicio.
+    </p>
+    <form id="contactForm" method="POST">
+        <div class="mb-3">
+            <label for="reason" class="form-label">Razón del contacto</label>
+            <select class="form-select" id="reason" name="reason" required>
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option value="1">Queja</option>
+                <option value="2">Sugerencia</option>
+                <option value="3">Duda</option>
+                <option value="4">Ayuda</option>
+                <option value="5">Problema técnico</option>
+                <option value="6">Otro</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">Mensaje</label>
+            <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extraScripts %}
+    {{ parent() }}
+    <script src="{{'public/js/src/forms.js'|filemtime_version}}"></script>
+{% endblock %}

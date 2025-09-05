@@ -1,0 +1,76 @@
+
+{% extends "layouts/notFound.twig" %}
+
+{% block content %}
+<style>
+	.error-404 {
+		position: relative;
+		min-height: 75vh;
+		display: grid;
+		place-items: center;
+		padding: 3rem 1rem;
+		font-family: 'Halenoir', 'Halenoir Black', 'Halenoir-Regular', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+		background:
+			radial-gradient(80rem 40rem at 10% -10%, rgba(220, 53, 69, .12), transparent 60%),
+			radial-gradient(70rem 30rem at 110% 10%, rgba(255, 77, 79, .10), transparent 60%),
+			linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.02));
+		overflow: hidden;
+	}
+	.error-404 .container-404 {
+		width: min(960px, 100%);
+		text-align: center;
+	}
+	.error-404 .code {
+		font-size: clamp(72px, 12vw, 160px);
+		line-height: 1;
+		font-weight: 800;
+		letter-spacing: .06em;
+		margin: 0 0 .5rem;
+		background: linear-gradient(45deg, #dc3545, #ff4d4f, #c1121f);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		text-shadow: 0 10px 30px rgba(220, 53, 69, .25);
+		animation: float404 6s ease-in-out infinite;
+	}
+	@keyframes float404 {
+		0%, 100% { transform: translateY(0); filter: drop-shadow(0 20px 30px rgba(220,53,69,.15)); }
+		50%      { transform: translateY(-8px); filter: drop-shadow(0 30px 40px rgba(220,53,69,.10)); }
+	}
+	.error-404 .title {
+		font-size: clamp(20px, 3.2vw, 32px);
+		font-weight: 700;
+		margin: 0 0 .5rem;
+		color: #3b0f12;
+	}
+	.error-404 .desc {
+		font-size: clamp(14px, 2.2vw, 18px);
+		color: #5c2b2b;
+		margin: 0 auto 1.75rem;
+		max-width: 56ch;
+	}
+	.error-404 .hints { color: #6b7785; font-size: 13px; }
+	.error-404 .bubbles::before,
+	.error-404 .bubbles::after {
+		content: "";
+		position: absolute;
+		width: 260px; height: 260px;
+		border-radius: 50%;
+		filter: blur(40px);
+		opacity: .15;
+	}
+	.error-404 .bubbles::before { background: #dc3545; top: -60px; left: -60px; }
+	.error-404 .bubbles::after  { background: #ff4d4f; bottom: -80px; right: -80px; }
+</style>
+
+<section class="error-404">
+	<div class="bubbles" aria-hidden="true"></div>
+	<div class="container-404">
+		<div class="code" aria-hidden="true">404</div>
+		<h1 class="title">Página no encontrada</h1>
+		<p class="desc">Lo sentimos, la página que estás buscando no existe, fue movida o cambió de nombre. Revisa la URL o intenta nuevamente más tarde.</p>
+		<p class="hints">Código: 404 • Si el problema persiste, contacta a tu asesor o soporte.</p>
+	</div>
+  
+</section>
+{% endblock %}

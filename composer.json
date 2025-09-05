@@ -1,0 +1,10 @@
+{
+    "require": {
+        "twig/twig": "^3.0",
+        "json-mapper/json-mapper": "^2.19",
+        "symfony/serializer": "^6.3",
+        "symfony/property-access": "^6.3",
+        "catfan/medoo": "^2.1",
+        "guzzlehttp/guzzle": "^7.9"
+    }
+}

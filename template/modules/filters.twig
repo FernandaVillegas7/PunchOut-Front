@@ -1,0 +1,25 @@
+<div class="card">
+    <div class="card-header bg-transparent p-3" id="headingOne">
+        <h5 class="mb-0">
+            <button style="height: 1rem !important;"
+                class="btn d-flex align-items-center justify-content-between w-100 text-white" data-toggle="collapse"
+                data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <h5 class="text-dark m-0">Categorias</h5>
+                <i class="fa fa-angle-down text-red"></i>
+            </button>
+        </h5>
+    </div>
+
+    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+        style="max-height: 450px; overflow-y: auto; overflow-x: hidden;">
+        <div class="card-body">
+            {% for cat in Categorias %}
+            <a href="" class="nav-item nav-link"></a>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="cat{{cat.categoriaID}}" name="cat{{cat.categoriaID}}" value="{{cat.categoriaID}}">
+                <label class="form-check-label" for="cat{{cat.categoriaID}}">{{cat.categoria}}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

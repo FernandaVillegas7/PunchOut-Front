@@ -1,0 +1,46 @@
+{% for p in products %}
+    <div class="col-12 mb-3 product-card" data-articulo="{{p.supplierPartAuxiliaryID}}">
+        <div class="product-item bg-light">
+            <div class="row g-0">
+                <div class="col-4 col-md-2">
+                    <div class="product-img position-relative overflow-hidden h-100">
+                        <input type="hidden" class="product-link" value="{{p.longName}}">
+                        <img class="img-fluid w-100 h-100" src="{{p.imagen[0].url}}" alt="{{p.longName}}" style="object-fit: cover;">
+                    </div>
+                </div>
+                <div class="col-8 col-md-10">
+                    <div class="p-2 p-md-3 d-flex flex-column h-100">
+                        <div>
+                            <p class="text-danger mb-1 small">{{p.manufacturer}}</p>
+                            <a href="javascript:void(0);" class="h6 text-decoration-none text-dark">
+                                {{p.longName}} {{" SKU:" ~ p.supplierPartID}}
+                            </a>
+                            <p class="text-muted small" style="font-weight: normal;">{{p.longName}}</p>
+                            <p class="small" style="font-size: 0.75rem; font-weight: bold;">{{ p.longName }}</p>
+							{# {% if p.stock < 10 and p.stock > 0 %}
+								<p class="small fw-bold text-danger" style="font-size: 0.85rem;">
+									¡ULTIMOS {{ p.stock }} PRODUCTOS EN STOCK!
+								</p>
+							{% elseif p.stock >= 999 or p.stock <= 0 %}
+								<p class="small fw-bold text-warning" style="font-size: 0.85rem;">
+									Pregunta disponibilidad con asesor
+								</p>
+							{% else %}
+								<p class="small" style="font-size: 0.75rem; font-weight: bold;">
+									STOCK: {{ p.stock }}
+								</p>
+							{% endif %} #}
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mt-auto pt-2 pt-md-3">
+                            <h6 class="text-dark mb-0">${{p.amount}} {{" " ~ p.currency}}</h6>
+                            <a class="btn btn-danger btn-sm addCar" href="#" data-detail="{{p|json_encode}}">
+                                <i class="fa-solid fa-cart-plus text-white"></i>
+                                <span class="ms-2 d-none d-md-inline">Agregar</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}

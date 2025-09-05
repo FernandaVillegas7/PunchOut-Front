@@ -1,0 +1,143 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="index">Inicio</a>
+                <a class="breadcrumb-item text-dark" href="shop">Tienda</a>
+                <span class="breadcrumb-item active">Carrito</span>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <h5 class="section-title position-relative mb-4 mx-5">
+        <span class="pr-3">
+            Productos seleccionados
+        </span>
+    </h5>
+    <div class="row px-xl-5">
+        <div class="col-lg-8 table-responsive mb-3">
+            <div id="listaArticulos">
+               <div style="max-height: 25rem; overflow-y: auto;">
+                    <table class="table table-borderless table-hover text-center mb-0" id="tbListItems">
+                        <thead class="border sticky-top bg-white">
+                            <tr>
+                                <th class="d-none">ItemCarritoID</th>
+                                <th class="d-none">CarritoID</th>
+                                <th>Partida</th>
+                                <th>CodigoArticulo</th>
+                                <th></th>
+                                <th>Productos</th>
+                                <th>Cantidad</th>
+                                <th class="border">Total</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="extras" class="align-middle">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-30 my-5">
+                <h3 class="text-center mb-3">Datos Adicionales</h3>
+                <div class="p-30 my-5">
+                    <div class="row mb-4 border p-3 rounded shadow-sm alert alert-info text-center" role="alert">
+                        La entrega de su pedido se realizará en el lugar de entrega seleccionado previamente en su sesión.
+                        Si requiere modificar el destino o tiene alguna solicitud especial, por favor contacte a su asesor de ventas para gestionar el cambio.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <h5 class="section-title position-relative text-uppercase mt-4 mb-3">
+                <span class=" pr-3">
+                    Resumen del carrito
+                </span>
+            </h5>
+
+            <div class="p-30 mb-5">
+                <div class="border-bottom pb-2">
+                    <div class="d-flex justify-content-between mb-3">
+                        {# <h6>Subtotal</h6> #}
+                        {# <h6>$ {{subTotal}}</h6> #}
+                        {# <h6>$ SUBTOTAL</h6> #}
+                    </div>
+
+                    {# {% set iva = subTotal * 0.16 %} #}
+                    <div class="d-flex justify-content-between">
+                        {# <h6 class="font-weight-medium">IVA</h6> #}
+                        {# <h6 class="font-weight-medium">$ {{iva}}</h6> #}
+                        {# <h6 class="font-weight-medium">$ IVA</h6> #}
+                    </div>
+                </div>
+                {# {% set granTotal = subTotal + iva %} #}
+                <div class="pt-2">
+                    <div class="d-flex justify-content-between mt-2">
+                        <h5>Total</h5>
+                        <h5 id="granTotal">$ TOTAL</h5>
+                    </div>
+                    {# <a href="compra"> #}
+                        <button id="btnCXML" class="btn btn-danger fw-bold my-3 w-100">
+                            Enviar Pedido
+                        </button>
+                    {# </a> #}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extraScripts %}
+    {{ parent() }}
+    
+    <script>
+    // Validación global de sesión para PunchOut/OCI en Compra Rápida
+    // TODO: HABILITAR SESION AQUI
+    // (function () {
+    //     var ERROR_URL = 'https://b2b.mersolsureste.com.mx/errors/401';
+    //     try {
+    //         var params = new URLSearchParams(window.location.search);
+    //         var fromUrl = params.get('SessionID');
+    //         var sid = fromUrl || (sessionStorage.getItem('punchoutSessionID') || '');
+
+    //         if (!sid) {
+    //             window.location.replace(ERROR_URL);
+    //             return;
+    //         }
+
+    //         // Persistir el SessionID para siguientes requests
+    //         try { sessionStorage.setItem('punchoutSessionID', sid); } catch (e) {}
+
+    //         // Validar en servidor y anclar cookie de sesión PHP para las llamadas AJAX posteriores
+    //         fetch('app/api/exiros.php?method=validateSessionID', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ SessionID: sid })
+    //         }).then(function (res) {
+    //             if (!res.ok) throw new Error('HTTP ' + res.status);
+    //             return res.json();
+    //         }).then(function (json) {
+    //             if (!json || json.error) {
+    //                 window.location.replace(ERROR_URL);
+    //             }
+    //         }).catch(function () {
+    //             window.location.replace(ERROR_URL);
+    //         });
+    //     } catch (e) {
+    //         window.location.replace(ERROR_URL);
+    //     }
+    // })();
+    // Nota: CompraRapida.js debe leer sessionStorage('punchoutSessionID') si necesita adjuntar el parámetro en URLs
+</script>
+    <script src="{{'public/js/src/DetallesCarrito.js'|filemtime_version}}"></script>
+{% endblock %}

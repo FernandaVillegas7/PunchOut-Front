@@ -1,0 +1,487 @@
+{% extends "layouts/base.twig" %}
+
+{% block pageContent %}
+	{# TODO: Mover estilo a un CSS #}
+	<style>
+		.card.hover-shadow:hover {
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+			/* Sombra gris */
+			transition: box-shadow 0.3s ease-in-out;
+			/* Transición suave */
+		}
+	</style>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<div
+				class="col-md-12">
+				<!-- Tarjeta sin fondo ni borde -->
+				<div class="card" style="height: 20vh; background-color: transparent; border: none;">
+					<div
+						class="card-body d-flex align-items-center">
+						<!-- Foto de perfil a la izquierda -->
+						<div class="profile-photo me-4">
+							<img src="public/img/incognito.jpg" alt="Foto de perfil" class="img-fluid rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+						</div>
+
+						<!-- Nombre y correo a la derecha -->
+						<div class="profile-info">
+							<h5 class="card-title mb-2">{{ Nombre }}</h5>
+							<p class="card-text text-muted">{{ Email }}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tarjetas 2x2 con fondo blanco y borde -->
+		<div
+			class="row mt-4">
+			<!-- Primera tarjeta: Información personal -->
+			<div
+				class="col-md-6 mb-4">
+				<!-- Hacer que toda la tarjeta sea clickeable -->
+				<div class="card shadow-sm hover-shadow" data-bs-toggle="modal" data-bs-target="#personalInfoModal" style="cursor: pointer;">
+					<div class="card-body">
+						<h5 class="card-title">
+							<i class="bi bi-buildings"></i>
+							Información General</h5>
+						<p class="card-text">Consulta y actualiza tus datos personales, como nombre, correo y más.</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Otras tarjetas -->
+			<div class="col-md-6 mb-4">
+				<div class="card shadow-sm hover-shadow" data-bs-toggle="modal" data-bs-target="#salesAgentModal" style="cursor: pointer;">
+					<div class="card-body">
+						<h5 class="card-title">
+							<i class="bi bi-person-badge"></i>
+							Mi agente de ventas</h5>
+						<p class="card-text">Consulta la información de contacto de tu agente de ventas asignado.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6 mb-4">
+				<div class="card shadow-sm hover-shadow" data-bs-toggle="modal" data-bs-target="#comprasFacturasModal" style="cursor: pointer;">
+					<div class="card-body">
+						<h5 class="card-title">
+							<i class="bi bi-receipt"></i>
+							Compras y Facturas
+						</h5>
+						<p class="card-text">Consulta tus compras recientes y descarga tus facturas.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6 mb-4">
+				<div class="card shadow-sm hover-shadow" data-bs-toggle="modal" data-bs-target="#estadoCuentaModal" style="cursor: pointer;">
+					<div class="card-body">
+						<h5 class="card-title">
+							<i class="bi bi-credit-card"></i>
+							Estado de cuenta
+						</h5>
+						<p class="card-text">Consulta el estado de cuenta</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal para Información Personal -->
+	<div class="modal fade" id="personalInfoModal" tabindex="-1" aria-labelledby="personalInfoModalLabel" aria-hidden="true">
+		<div
+			class="modal-dialog modal-lg modal-dialog-centered">
+			<!-- Tamaño grande y centrado -->
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="personalInfoModalLabel">Información General</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div
+					class="modal-body">
+					<!-- Botones con mini formularios -->
+					<div
+						class="row">
+						<!-- Botón 1: Datos Personales -->
+						<div class="col-12 mb-3">
+							<div class="card d-flex" style="background-color: transparent; border: none; cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#formDatosPersonales" aria-expanded="false" aria-controls="formDatosPersonales">
+								<div class="card-body d-flex align-items-center">
+									<h5 class="card-title m-0 text-start">
+										<i class="bi bi-buildings"></i>
+										Datos Generales</h5>
+									<i class="bi bi-arrow-right-short ms-auto" style="font-size: 1.5rem;"></i>
+								</div>
+							</div>
+							<div class="collapse" id="formDatosPersonales">
+								<div class="card card-body">
+									<form>
+										<div class="mb-3">
+											<label for="nombreCliente" class="form-label">Nombre</label>
+											<input type="text" class="form-control" id="nombreCliente" placeholder="No disponible, contacte a su asesor." readonly>
+										</div>
+										<div class="mb-3">
+											<label for="emailIntelisis" class="form-label">Correo</label>
+											<input type="email" class="form-control" id="emailIntelisis" placeholder="No disponible, contacte a su asesor." readonly>
+										</div>
+										<div class="mb-3">
+											<label for="telefonoIntelisis" class="form-label">Teléfono</label>
+											<input type="text" class="form-control" id="telefonoIntelisis" placeholder="No disponible, contacte a su asesor." readonly>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+
+						<!-- Botón 3: Datos Fiscales -->
+						<div class="col-12 mb-3">
+							<div class="card d-flex" style="background-color: transparent; border: none; cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#formDatosFiscales" aria-expanded="false" aria-controls="formDatosFiscales">
+								<div class="card-body d-flex align-items-center">
+									<h5 class="card-title m-0 text-start">
+										<i class="bi bi-bank2"></i>
+										Datos Fiscales</h5>
+									<i class="bi bi-arrow-right-short ms-auto" style="font-size: 1.5rem;"></i>
+								</div>
+							</div>
+							<div class="collapse" id="formDatosFiscales">
+								<div class="card card-body">
+									<form>
+										<div class="mb-3">
+											<label for="rfc" class="form-label">RFC</label>
+											<input type="text" class="form-control" id="rfc" placeholder="No disponible, contacte a su asesor." readonly>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<!-- Botón 2: Mis Cuentas -->
+						<div class="col-12 mb-3">
+							<div class="card d-flex" style="background-color: transparent; border: none; cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#formMisCuentas" aria-expanded="false" aria-controls="formMisCuentas">
+								<div class="card-body d-flex align-items-center">
+									<h5 class="card-title m-0 text-start">
+										<i class="bi bi-boxes"></i>
+										Mis Cuentas</h5>
+									<i class="bi bi-arrow-right-short ms-auto" style="font-size: 1.5rem;"></i>
+								</div>
+							</div>
+							<div class="collapse" id="formMisCuentas">
+								<div class="card card-body">
+									<table class="table table-striped">
+										<thead>
+											<tr>
+												<th scope="col">Correo</th>
+												<th scope="col">Celular</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- Las filas se llenarán dinámicamente con JavaScript -->
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{# TODO: AGREGAR BOTON PARA REDIRIGIR A WHATSAPP DEL AGENTE DE VENTAS #}
+	<div class="modal fade" id="salesAgentModal" tabindex="-1" aria-labelledby="salesAgentModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="salesAgentModalLabel">Mi agente de ventas</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div
+						class="row align-items-center">
+						<!-- Imagen del agente -->
+						<div class="col-md-4 text-center">
+							<img id="fotoAgente" src="public/img/incognito.jpg" alt="Foto del agente" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+						</div>
+						<!-- Información del agente -->
+						<div class="col-md-8">
+							<div class="card card-body">
+								<form>
+									<div class="mb-3">
+										<label for="nombreAgente" class="form-label">Nombre del agente</label>
+										<input type="text" class="form-control" id="nombreAgente" placeholder="No disponible, contacte a su asesor." readonly>
+									</div>
+									<div class="mb-3">
+										<label for="correoAgente" class="form-label">Correo</label>
+										<input type="email" class="form-control" id="correoAgente" placeholder="No disponible, contacte a su asesor." readonly>
+									</div>
+									<div class="mb-3">
+										<label for="celularAgente" class="form-label">Celular</label>
+										<input type="text" class="form-control" id="celularAgente" placeholder="No disponible, contacte a su asesor." readonly>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="comprasFacturasModal" tabindex="-1" aria-labelledby="comprasFacturasModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95%; height: 95%;">
+			<div class="modal-content" style="height: 100%;">
+				<div class="modal-header">
+					<h5 class="modal-title" id="comprasFacturasModalLabel">Compras y Facturas</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" style="overflow-y: auto; height: calc(100% - 56px - 56px);">
+					<div class="table-responsive">
+						<table id="facturasTable" class="table table-striped">
+							<thead>
+								<tr>
+									<th scope="col">MovID</th>
+									<th scope="col">Fecha</th>
+									<th scope="col">Número de Factura</th>
+									<th scope="col">Monto</th>
+									<th scope="col">Acciones</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Las filas se llenarán dinámicamente con JavaScript -->
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal HTML -->
+	<div class="modal fade" id="facturaModal" tabindex="-1" aria-labelledby="facturaModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="facturaModalLabel">Detalles de la Factura</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row text-center mb-4">
+						<div class="col">
+							<h6>
+								<strong>Factura</strong>
+							</h6>
+						</div>
+					</div>
+					<div class="row text-center">
+						<div class="col">
+							<p>
+								<strong>Serie y Folio</strong>
+							</p>
+							<p id="serieFolio">NA</p>
+						</div>
+						<div class="col">
+							<p>
+								<strong>Fecha Emisión</strong>
+							</p>
+							<p id="fechaEmision">NA</p>
+						</div>
+						<div class="col">
+							<p>
+								<strong>Agente</strong>
+							</p>
+							<p id="agente">NA</p>
+						</div>
+						<div class="col">
+							<p>
+								<strong>Condiciones de Pago</strong>
+							</p>
+							<p id="condicionesPago">NA</p>
+						</div>
+					</div>
+					<!-- Grid Bootstrap 3x5 -->
+					<!-- Grid Bootstrap 3x5 con bordes visibles -->
+					<div class="row text-center mt-4 border">
+						<div class="col border">
+							<p>
+								<strong>Domicilio Fiscal</strong>
+							</p>
+							<p id="domicilio1">NA</p>
+							<p id="domicilio2">NA</p>
+							<p id="domicilio3">NA</p>
+						</div>
+						<div class="col border">
+							<p>
+								<strong>RFC</strong>
+							</p>
+							<p id="rfc1">NA</p>
+							<p id="rfc2">NA</p>
+							<p id="rfc3">NA</p>
+						</div>
+						<div class="col border">
+							<p>
+								<strong id="emiteSucursal">NA</strong>
+							</p>
+							<p id="direccion1">NA</p>
+							<p id="direccion2">NA</p>
+							<p id="direccion3">NA</p>
+						</div>
+					</div>
+
+					<!-- Grid Bootstrap 2x1 -->
+					<div class="row text-center mt-4">
+						<div class="col">
+							<strong>Cliente</strong><p id="nombreCliente2">NA</p>
+							<strong>RFC</strong><p id="rfcCliente">NA</p>
+							<strong>Dirección</strong><p id="direccionCliente">NA</p>
+							<strong>Colonia</strong><p id="coloniaCliente">NA</p>
+							<strong>Estado</strong><p id="estadoCliente">NA</p>
+						</div>
+						<div class="col border">
+							<strong>Uso CFID</strong><p id="usoCFIDCliente">NA</p>
+							<strong>Localidad</strong><p id="localidadCliente">NA</p>
+							<strong>Deleg./Municipio</strong><p id="delegacionMunicipioCliente">NA</p>
+							<strong>C.P.</strong><p id="codigoPostalCliente">NA</p>
+							<strong>País</strong><p id="paisCliente">NA</p>
+						</div>
+					</div>
+
+					<!-- Tabla para Detalles de Productos -->
+					<div class="table-responsive mt-4">
+						<table id="detalleProductosTable" class="table table-striped">
+							<thead>
+								<tr>
+									<th scope="col">Cantidad</th>
+									<th scope="col">Unidad</th>
+									<th scope="col">Código</th>
+									<th scope="col">Descripción</th>
+									<th scope="col">Valor Unitario</th>
+									<th scope="col">Importe</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Grilla 2x4 con títulos en vertical -->
+					<div class="row text-center mt-4">
+						<div class="col border">
+							<p><strong>SubTotal</strong></p>
+							<p>$15,000.00</p>
+						</div>
+						<div class="col border">
+							<p><strong>IVA 16%</strong></p>
+							<p>$2,400.00</p>
+						</div>
+						<div class="col border">
+							<p><strong>Retención IVA</strong></p>
+							<p>$300.00</p>
+						</div>
+						<div class="col border">
+							<p><strong>Total</strong></p>
+							<p>$17,100.00</p>
+						</div>
+					</div>
+
+					<div id="facturaDetalles"><!-- Contenido dinámico de la factura --></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<div class="modal fade" id="estadoCuentaModal" tabindex="-1" aria-labelledby="estadoCuentaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="estadoCuentaModalLabel">
+                    <i class="bi bi-credit-card"></i> Estado de cuenta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+				<div id="estadoCuentaContent">
+					<div class="table-responsive" style="display:none;">
+						<table class="table table-bordered table-striped align-middle">
+							<thead class="table-dark">
+								<tr>
+									<th>Referencia</th>
+									<th>Fecha Emisión</th>
+									<th>Vencimiento</th>
+									<th>Saldo</th>
+									<th>Estado</th>
+									<th>Días</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Aquí se llenan las filas dinámicamente -->
+							</tbody>
+						</table>
+					</div>
+				</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extraScripts %}
+	<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+	<script>
+    // // Validación global de sesión para PunchOut/OCI en Compra Rápida
+	// // TODO: HABILITAR SESION AQUI
+    // (function () {
+    //     var ERROR_URL = 'https://b2b.mersolsureste.com.mx/errors/401';
+    //     try {
+    //         var params = new URLSearchParams(window.location.search);
+    //         var fromUrl = params.get('SessionID');
+    //         var sid = fromUrl || (sessionStorage.getItem('punchoutSessionID') || '');
+
+    //         if (!sid) {
+    //             window.location.replace(ERROR_URL);
+    //             return;
+    //         }
+
+    //         // Persistir el SessionID para siguientes requests
+    //         try { sessionStorage.setItem('punchoutSessionID', sid); } catch (e) {}
+
+    //         // Validar en servidor y anclar cookie de sesión PHP para las llamadas AJAX posteriores
+    //         fetch('app/api/exiros.php?method=validateSessionID', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ SessionID: sid })
+    //         }).then(function (res) {
+    //             if (!res.ok) throw new Error('HTTP ' + res.status);
+    //             return res.json();
+    //         }).then(function (json) {
+    //             if (!json || json.error) {
+    //                 window.location.replace(ERROR_URL);
+    //             }
+    //         }).catch(function () {
+    //             window.location.replace(ERROR_URL);
+    //         });
+    //     } catch (e) {
+    //         window.location.replace(ERROR_URL);
+    //     }
+    // })();
+    // Nota: CompraRapida.js debe leer sessionStorage('punchoutSessionID') si necesita adjuntar el parámetro en URLs
+</script>
+	<script src="{{'public/js/src/perfil.js'|filemtime_version}}"></script>
+{% endblock %}
