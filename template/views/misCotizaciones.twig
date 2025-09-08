@@ -21,8 +21,8 @@
     {# Filtros (decorativos por ahora) #}
     <form class="row g-2 align-items-end mb-3">
       <div class="col-12 col-md-4">
-        <label class="form-label">Buscar</label>
-        <input type="text" class="form-control" placeholder="Artículo, descripción…">
+        <label class="form-label">Clave</label>
+        <input type="text" id="claveC" class="form-control" placeholder="Ingresa tu clave de cotización">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label">Desde</label>
@@ -43,19 +43,19 @@
         </select>
       </div>
       <div class="col-6 col-md-2 d-grid">
-        <button type="button" class="btn btn-danger">Aplicar</button>
+        <button type="button" class="btn btn-danger" id="searchCot">Aplicar</button>
       </div>
     </form>
 
     {# Contenedor donde se pintará el acordeón #}
-    <div id="comprasRoot" data-api="/b2c/app/api/CotizacionCRM.php" data-cliente="CL-00078">
+    <div id="comprasRoot" data-api="/b2c/app/api/CotizacionCRM.php" data-cliente="">
       <div class="text-center text-muted py-5 skeleton">Cargando compras…</div>
     </div>
 
   </div>
 </section>
 {% endblock %}
-
+ 
 {% block extraScripts %}
 {{ parent() }}
 <script src="{{ 'public/js/src/MisCotizaciones.js' | filemtime_version }}"></script>

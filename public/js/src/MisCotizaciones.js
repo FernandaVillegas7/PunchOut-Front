@@ -1,45 +1,15 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  let debug = ''
-  const url = "/b2c/app/api/CotizacionCRM.php?method=get-cotizacion-crm&ClienteID=CL-00078";
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      const txt = await res.text().catch(()=> "");
-      throw new Error(`HTTP ${res.status} ${res.statusText} :: ${txt}`);
-    }
-    const data = await res.json();
-    console.log("CRM get-cotizacion-crm:", data);
-    if (debug) debug.textContent = JSON.stringify(data, null, 2);
-  } catch (e) {
-    console.error(e);
-    if (debug) debug.textContent = `Error: ${e.message}`;
-  }
-});
-
 (function () {
   // =========================
   // Utilidades
   // =========================
   const byId = id => document.getElementById(id);
-  const num  = v => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  };
-  const fmtMoney = (v, currency) => {
-    const cur = currency || 'MXN';
-    try {
-      return new Intl.NumberFormat('es-MX', { style: 'currency', currency: cur }).format(num(v));
-    } catch {
-      return `${cur} ${num(v).toFixed(2)}`;
-    }
-  };
+  const num  = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+  const fmtMoney = (v, currency='MXN') =>
+    new Intl.NumberFormat('es-MX', { style:'currency', currency }).format(num(v));
   const fmtFecha = iso => {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleDateString('es-MX', { year:'numeric', month:'short', day:'2-digit' });
-    } catch { return iso || '—'; }
+    try { return new Date(iso).toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'2-digit'}) }
+    catch { return iso || '—' }
   };
-  const getQueryParam = k => new URLSearchParams(window.location.search).get(k);
   const guessCurrencyFromLista = lista => /USD/i.test(lista || '') ? 'USD' : 'MXN';
   const sanitizeId = s => String(s || 'x').replace(/[^a-zA-Z0-9_-]/g, '');
 
@@ -53,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const txt = await res.text().catch(() => '');
       throw new Error(`HTTP ${res.status} ${res.statusText} :: ${txt}`);
     }
-    return res.json();
+    return res.json(); // ← arreglo de cotizaciones
   }
 
   // =========================
@@ -69,36 +39,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const items = Array.isArray(cot.items) ? cot.items : [];
 
-    // Totales
+    // Totales con IVA incluido por item (precio * (1 + impuesto/100))
     const subtotal = items.reduce((s, it) => {
       const precioConIVA = num(it.precio) * (1 + num(it.impuesto1) / 100);
       return s + precioConIVA * num(it.cantidad);
     }, 0);
-    const total = subtotal
+    const total = subtotal;
 
     const rows = items.length
-    
-       ? items.map((it, idx) => {
-      const precioConIVA = num(it.precio) * (1 + num(it.impuesto1) / 100)
-
-      return `
-        <tr>
-          <td>${idx + 1}</td>
-          <td class="fw-semibold">${it.productoID || ''}</td>
-          <td>
-            ${it.descripcion || it.nombre || ''}
-            <div class="small text-muted">
-              ${it.claveFabricante ? `Fabricante: ${it.claveFabricante}` : ''}${it.claveFabricante && it.descripcionExtra ? ' — ' : ''}${it.descripcionExtra ? `Extra: ${it.descripcionExtra}` : ''}
-            </div>
-          </td>
-          <td class="text-end">${num(it.cantidad).toFixed(2)}</td>
-          <td class="text-center">${it.unidad || 'EA'}</td>
-          <td class="text-end money">${fmtMoney(precioConIVA, currency)}</td>
-          <td class="text-end money">${fmtMoney(num(precioConIVA) * num(it.cantidad), currency)}</td>
-        </tr>
-      `;
-    }).join('')
-  : `<tr><td colspan="7" class="text-center text-muted py-4">Sin artículos</td></tr>`;
+      ? items.map((it, idx) => {
+          const precioConIVA = num(it.precio) * (1 + num(it.impuesto1) / 100);
+          const importeConIVA = precioConIVA * num(it.cantidad);
+          return `
+            <tr>
+              <td>${idx + 1}</td>
+              <td class="fw-semibold">${it.productoID || ''}</td>
+              <td>
+                ${it.descripcion || it.nombre || ''}
+                <div class="small text-muted">
+                  ${it.claveFabricante ? `Fabricante: ${it.claveFabricante}` : ''}${it.claveFabricante && it.descripcionExtra ? ' — ' : ''}${it.descripcionExtra ? `Extra: ${it.descripcionExtra}` : ''}
+                </div>
+              </td>
+              <td class="text-end">${num(it.cantidad).toFixed(2)}</td>
+              <td class="text-center">${it.unidad || 'EA'}</td>
+              <td class="text-end money">${fmtMoney(precioConIVA, currency)}</td>
+              <td class="text-end money">${fmtMoney(importeConIVA, currency)}</td>
+            </tr>
+          `;
+        }).join('')
+      : `<tr><td colspan="7" class="text-center text-muted py-4">Sin artículos</td></tr>`;
 
     return `
       <div class="accordion-item mb-3">
@@ -156,6 +125,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                       </tbody>
                     </table>
                   </div>
+                  <div class="d-flex justify-content-end p-3">
+                    <button type="button" class="btn btn-success" id="btnProcesarCompra">
+                      <i class="fa-solid fa-check"></i> Procesar Compra
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -172,45 +146,56 @@ document.addEventListener("DOMContentLoaded", async () => {
   function renderCotizaciones(cots) {
     const list = Array.isArray(cots) ? cots : [];
     if (!list.length) {
-      return `
-        <div class="alert alert-warning" role="alert">
-          No hay cotizaciones para mostrar.
-        </div>`;
+      return `<div class="alert alert-warning" role="alert">No hay cotizaciones para mostrar.</div>`;
     }
-
-    const inner = list.map(buildCotizacionItem).join('');
-    return `
-      <div class="accordion" id="comprasLista">
-        ${inner}
-      </div>
-    `;
+    return `<div class="accordion" id="comprasLista">${list.map(buildCotizacionItem).join('')}</div>`;
   }
 
   // =========================
-  // Init
+  // Cargar con el ClienteID del input
   // =========================
-  async function init() {
+  async function cargarDesdeInput() {
     const root = byId('comprasRoot');
-    if (!root) return;
+    const apiBase = root.getAttribute('data-api') || '/b2c/app/api/CotizacionCRM.php';
 
-    const apiBase  = root.getAttribute('data-api')     || '/b2c/app/api/CotizacionCRM.php';
-    const cliente  = root.getAttribute('data-cliente') || getQueryParam('ClienteID') || 'CL-00078';
+    const claveInput = byId('claveC');
+    const clienteId = (claveInput?.value || '').trim();
+    if (!clienteId) {
+      alert('Por favor ingresa tu clave/ClienteID');
+      claveInput?.focus();
+      return;
+    }
 
+    root.innerHTML = `<div class="text-center text-muted py-5 skeleton">Cargando cotizaciones…</div>`;
     try {
-      const data = await fetchCotizaciones(apiBase, cliente);
+      const data = await fetchCotizaciones(apiBase, clienteId);
       root.innerHTML = renderCotizaciones(data);
-      // Opcional: expandir la primera
       const firstBtn = root.querySelector('.accordion-button');
       if (firstBtn) firstBtn.click();
     } catch (e) {
-      console.error(e);
       root.innerHTML = `
         <div class="alert alert-danger" role="alert">
           No se pudo cargar la información. <code>${String(e.message)}</code>
-        </div>
-      `;
+        </div>`;
     }
   }
 
+  // =========================
+  // Init: SOLO configura eventos (no hace fetch automático)
+  // =========================
+  function init() {
+    const btnSearch = byId('searchCot');
+    btnSearch?.addEventListener('click', cargarDesdeInput);
+
+    // disparar con Enter dentro del input
+    const claveInput = byId('claveC');
+    claveInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        cargarDesdeInput();
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', init);
-})()
+})();
