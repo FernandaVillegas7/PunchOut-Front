@@ -1,3 +1,20 @@
 /vendor/
 /public/img/articulos/
 test.php
+
+# Visual Studio local
+.vs/
+
+# VS Code (por si acaso)
+.vscode/
+
+# Node / build (si aplica)
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+
+# Entornos
+.env
+.env.*
