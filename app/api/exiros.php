@@ -5,9 +5,9 @@ require_once __DIR__ . '/../controllers/ExirosController.php';
 use app\controllers\ExirosController;
 use const app\controllers\HTTP_BAD_REQUEST;
 
-// TODO: HABILITAR SESION AQUI
 // If a SessionID is provided in the query, resume that PHP session.
 // This helps when the browser blocks third-party cookies during PunchOut.
+// NOTE: Disabled for development to avoid interference
 // if (isset($_GET['SessionID']) && is_string($_GET['SessionID']) && $_GET['SessionID'] !== '') {
 //     if (session_status() === PHP_SESSION_ACTIVE) {
 //         session_write_close();
@@ -230,32 +230,6 @@ try {
             echo json_encode($categorias);
             exit;
             break;
-
-        case 'SaveCarrito':
-            if ($requestMethod === 'POST') {
-                $input = file_get_contents('php://input');
-                $data = json_decode($input, true);
-
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    http_response_code(400);
-                    header('Content-Type: application/json; charset=UTF-8');
-                    echo json_encode([
-                        'isError' => true,
-                        'message' => 'JSON inválido en el body: ' . json_last_error_msg()
-                    ]);
-                    exit;
-                }
-
-                $result = $controller->SaveCarrito($data ?? []);
-
-                // The controller already normalizes the response and carries data (NuevoCarritoID)
-                header('Content-Type: application/json; charset=UTF-8');
-                echo json_encode($result);
-                exit;
-            }
-            break;
-
-
 
 
         default:

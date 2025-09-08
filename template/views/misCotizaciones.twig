@@ -1,0 +1,62 @@
+{% extends "layouts/base.twig" %}
+
+{% block extraStyles %}
+<style type="text/css">
+  .money { white-space: nowrap; }
+  .skeleton { opacity: .6; }
+</style>
+{% endblock %}
+
+{% block pageContent %}
+<section>
+  <div class="container py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div>
+        <h1 class="h4 mb-1">Mis Cotizaciones</h1>
+        <p class="text-muted mb-0">Órdenes y detalle de artículos</p>
+      </div>
+    </div>
+
+    {# Filtros (decorativos por ahora) #}
+    <form class="row g-2 align-items-end mb-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label">Buscar</label>
+        <input type="text" class="form-control" placeholder="Artículo, descripción…">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Estatus</label>
+        <select class="form-select">
+          <option value="">Todos</option>
+          <option>Completado</option>
+          <option>En proceso</option>
+          <option>Enviado</option>
+          <option>Cancelado</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2 d-grid">
+        <button type="button" class="btn btn-danger">Aplicar</button>
+      </div>
+    </form>
+
+    {# Contenedor donde se pintará el acordeón #}
+    <div id="comprasRoot" data-api="/b2c/app/api/CotizacionCRM.php" data-cliente="CL-00078">
+      <div class="text-center text-muted py-5 skeleton">Cargando compras…</div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extraScripts %}
+{{ parent() }}
+<script src="{{ 'public/js/src/MisCotizaciones.js' | filemtime_version }}"></script>
+{% endblock %}

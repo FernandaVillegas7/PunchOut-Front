@@ -8,9 +8,9 @@ use app\controllers\B2BController;
 
 use const app\controllers\HTTP_BAD_REQUEST;
 
-// TODO: HABILITAR SESION AQUI
 // If a SessionID is provided in the query, resume that PHP session.
 // This is useful for PunchOut flows where third-party cookies may be blocked.
+// NOTE: Disabled for development to avoid interference
 // if (isset($_GET['SessionID']) && is_string($_GET['SessionID']) && $_GET['SessionID'] !== '') {
 //     if (session_status() === PHP_SESSION_ACTIVE) {
 //         session_write_close();

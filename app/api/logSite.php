@@ -17,22 +17,11 @@ try {
     switch ($method) {
         case 'CrearLogPagina':
             if ($requestMethod === 'POST') {
-                $data = json_decode($input, true) ?: [];
-                $Valor = isset($data['Valor']) ? trim((string)$data['Valor']) : null;
-                // Default FechaHora to now if missing/empty (Y-m-d H:i:s)
-                $FechaHora = isset($data['FechaHora']) && trim((string)$data['FechaHora']) !== ''
-                    ? trim((string)$data['FechaHora'])
-                    : date('Y-m-d H:i:s');
-                // Prefer provided IP when truthy, else REMOTE_ADDR, else null
-                $providedIP = isset($data['IP']) ? trim((string)$data['IP']) : '';
-                $IP = $providedIP !== '' ? $providedIP : ($_SERVER['REMOTE_ADDR'] ?? null);
-
+                $data = json_decode($input, true);
+                $Valor = $data['Valor'] ?? null;
+                $FechaHora = $data['FechaHora'] ?? null;
+                $IP = $data['IP'] ?? $_SERVER['REMOTE_ADDR'];
                 $controller->CrearLogPagina($Valor, $FechaHora, $IP);
-                exit;
-            } else {
-                http_response_code(405);
-                header('Content-Type: application/json');
-                echo json_encode(['error' => true, 'message' => 'Método no permitido']);
                 exit;
             }
             break;

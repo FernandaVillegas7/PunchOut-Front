@@ -29,10 +29,11 @@ class B2BController extends BaseController
             }
         }
 
-    // TODO: HABILITAR SESION AQUI - Final guard: require PunchOut SessionID
-    // if (empty($_SESSION['SessionID'])) {
-    //     $this->setResponse(true, HTTP_UNAUTHORIZED, 'SessionID de PunchOut no válido o no encontrado')->showResponse();
-    // }
+        // Final guard
+        //TODO: DESACTIVAR PARA DESARROLLO
+        // if (empty($_SESSION['SessionID'])) {
+        //     $this->setResponse(true, HTTP_UNAUTHORIZED, 'SessionID de PunchOut no válido o no encontrado')->showResponse();
+        // }
 
         $routes = $this->getApiRutes();
         $apiKey = $this->getXApiKey();
