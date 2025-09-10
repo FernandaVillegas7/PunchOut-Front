@@ -1,6 +1,6 @@
 <?php
 
-function callApi(string $endpoint, array $data, array $options = [])
+function callApiCRM(string $endpoint, array $data, array $options = [])
 {
     echo "[DEBUG] Iniciando callApi() para: $endpoint\n"; flush();
 

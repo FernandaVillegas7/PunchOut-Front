@@ -152,7 +152,7 @@ function GenerarOCI_Quick(orderData) {
             : (item.imagen || '');
         _dynImgUrl = _dynImgUrl.replace(/[\r\n]+/g, '&').replace(/\s*&\s*/g, '&').replace('?&', '?').replace(/&&+/g, '&').trim();
 
-    addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartID);
+        addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartID);
         addHidden(`NEW_ITEM-MATGROUP[${n}]`, matgrp);
         addHidden(`NEW_ITEM-DESCRIPTION[${n}]`, shortnm);
         addHidden(`NEW_ITEM-LANGUAGE[${n}]`, 'ES');
@@ -273,7 +273,7 @@ function listItems() {
     $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
 }
 
-$('#btnSolicitar').on('click', function(e){
+$('#').on('click', function(e){
     e.preventDefault();
 
     // Construir y mostrar JSON similar a DetallesCarrito.js

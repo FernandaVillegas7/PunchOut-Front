@@ -92,6 +92,8 @@ class ExirosController extends BaseController
             $_SESSION['BuyerCookie'] = $buyerCookie;
             $_SESSION['BrowserFormPostUrl'] = $hookUrl;
             $_SESSION['Extrinsics'] = $extrinsics;
+            $_SESSION['Username'] = $username;
+            $_SESSION['Password'] = $password; 
 
             return [
                 'error'   => false,
@@ -171,6 +173,8 @@ class ExirosController extends BaseController
         $_SESSION['BuyerCookie'] = $buyerCookie;
         $_SESSION['BrowserFormPostUrl'] = $browserFormPostUrl;
         $_SESSION['Extrinsics'] = $extrinsics;
+        $_SESSION['Username'] = $username;
+        $_SESSION['Password'] = $password; 
 
         // Respuesta (puedes ajustar formato según lo que espera el comprador)
         return [

@@ -17,38 +17,40 @@
         <p class="text-muted mb-0">Órdenes y detalle de artículos</p>
       </div>
     </div>
-
+    <div class="alert alert-success" role="alert" id="alertCompra" style="display:none;">
+      Tu cotización ha sido procesada a compra.
+    </div>
     {# Filtros (decorativos por ahora) #}
     <form class="row g-2 align-items-end mb-3">
-      <div class="col-12 col-md-4">
+      <div class="col-6 col-md-10">
         <label class="form-label">Clave</label>
         <input type="text" id="claveC" class="form-control" placeholder="Ingresa tu clave de cotización">
       </div>
-      <div class="col-6 col-md-2">
-        <label class="form-label">Desde</label>
-        <input type="date" class="form-control">
+      {# <div class="col-6 col-md-2">
+        <label class="form-label d-none">Desde</label>
+        <input type="date" class="form-control d-none">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label">Hasta</label>
-        <input type="date" class="form-control">
+        <label class="form-label d-none">Hasta</label>
+        <input type="date" class="form-control d-none">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label">Estatus</label>
-        <select class="form-select">
+        <label class="form-label d-none">Estatus</label>
+        <select class="form-select d-none">
           <option value="">Todos</option>
           <option>Completado</option>
           <option>En proceso</option>
           <option>Enviado</option>
           <option>Cancelado</option>
         </select>
-      </div>
+      </div> #}
       <div class="col-6 col-md-2 d-grid">
         <button type="button" class="btn btn-danger" id="searchCot">Aplicar</button>
       </div>
     </form>
 
     {# Contenedor donde se pintará el acordeón #}
-    <div id="comprasRoot" data-api="/b2c/app/api/CotizacionCRM.php" data-cliente="">
+    <div id="comprasRoot" data-api="/b2c/app/api/cotizacionCRM.php" data-cliente="">
       <div class="text-center text-muted py-5 skeleton">Cargando compras…</div>
     </div>
 
