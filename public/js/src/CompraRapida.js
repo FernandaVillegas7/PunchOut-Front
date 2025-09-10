@@ -464,11 +464,10 @@ $('#itemList').on('click', '.drop', function () {
 function renderSugerencia(producto) {
   const manufacturer = (producto.manufacturer || "Sugerido").toUpperCase();
   const image = producto.imagen || "/assets/placeholder.jpg";
-  const nombre = producto.nombre || "Producto";
-  const precio = `$${Number(producto.precio || 0).toFixed(2)} MXN`;
+  const nombre = producto.shortName || producto.nombre || "Producto";
+  const precio = `$${Number(producto.amount || producto.precio || 0).toFixed(2)} MXN`;
 
   return `
-  
     <div class="wrapper me-3">
       <div class="container">
         <div class="top" style="background: url('${image}') no-repeat center center / cover;"></div>
@@ -478,14 +477,12 @@ function renderSugerencia(producto) {
               <h1>${nombre}</h1>
               <p>${precio}</p>
             </div>
-            <div class="buy"><i class="material-icons">
-                <button class="btn btn-dark w-100 btnAgregarCarrito" 
-        data-producto='${JSON.stringify(producto)}' 
-        tooltip="Agregar">
-  <i class="fa-solid fa-cart-plus"></i>
-</button>
-
-            </i>
+            <div class="buy">
+              <button class="btn btn-dark w-100 btnAgregarCarrito" 
+                      data-producto='${JSON.stringify(producto)}' 
+                      tooltip="Agregar">
+                <i class="fa-solid fa-cart-plus"></i>
+              </button>
             </div>
           </div>
           <div class="right">
@@ -500,14 +497,11 @@ function renderSugerencia(producto) {
       </div>
       <div class="inside">
         <div class="icon" style="font-weight: bold; font-size: 0.8rem;">${manufacturer}</div>
-
         <div class="contents">
           <h4>${manufacturer}</h4>
           <table>
-          
             <tr><th>Producto</th><td>${nombre}</td></tr>
             <tr><th>Precio unitario</th><td>${precio}</td></tr>
-           
           </table>
         </div>
       </div>
@@ -515,58 +509,67 @@ function renderSugerencia(producto) {
   `;
 }
 
-
-
-
 function cargarSugerencias() {
-    const grid = document.getElementById('sugerenciasGrid');
-    if (!grid) return;
+  const grid = document.getElementById('sugerenciasGrid');
+  if (!grid) return;
 
-    const sessionId = getPunchoutSID(); // Usa la misma función de sesión
-    const url = `app/api/b2b.php?method=GetExirosProducts&pageSize=50&pageNumber=1${sessionId ? `&SessionID=${encodeURIComponent(sessionId)}` : ''}`;
+  const sessionId = getPunchoutSID();
+  const url = `app/api/b2b.php?method=GetExirosProducts&pageSize=50&pageNumber=1${sessionId ? `&SessionID=${encodeURIComponent(sessionId)}` : ''}`;
 
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            if (!data || !Array.isArray(data.products)) return;
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      if (!data || !Array.isArray(data.products)) return;
 
-            const productos = data.products;
+      // Usa el mismo formato que en select2
+      const productos = data.products.map(p => ({
+        id: p.codigoInterno,
+        text: `${p.supplierPartID} - ${p.shortName}`,
+        supplierPartID: p.supplierPartID,
+        buyerPartID: p.buyerPartID,
+        supplierPartAuxiliaryID: p.supplierPartAuxiliaryID,
+        currency: p.currency || "MXN",
+        shortName: (p.shortName || p.longName || "SIN NOMBRE").substring(0, 40),
+        unitOfMeasure: p.unitOfMeasure && p.unitOfMeasure.trim() !== "" ? p.unitOfMeasure : "EA",
+        category: p.category || "",
+        codigoInterno: p.codigoInterno || "",
+        longName: p.longName || "",
+        manufacturer: p.manufacturer || "",
+        manufacturerModelNumber: p.manufacturerModelNumber || "",
+        materialGroup: p.materialGroup || "",
+        amount: Number(p.amount || 0),
+        imagen: p.imagen || "/assets/placeholder.jpg"
+      }));
 
-            if (productos.length === 0) return;
+      if (productos.length === 0) return;
 
-            // Mezcla y toma 3 productos random
-            const sugeridos = productos
-                .sort(() => 0.5 - Math.random())
-                .slice(0, 6);
+      const sugeridos = productos.sort(() => 0.5 - Math.random()).slice(0, 6);
 
-            let html = '';
-            sugeridos.forEach(p => {
-                const prod = {
-                    nombre: p.longName || p.shortName || p.nombre || "Producto",
-                    precio: Number(p.amount || 0),
-                    imagen: p.imagen || '/assets/placeholder.jpg',
-                    manufacturer: p.manufacturer || 'SUGERIDO'
-                };
-                html += renderSugerencia(prod);
-            });
+      let html = '';
+      sugeridos.forEach(p => {
+        // Aquí pasamos el objeto completo
+        html += renderSugerencia(p);
+      });
 
-            grid.innerHTML = html;
-        })
-        .catch(err => {
-            console.warn("Error al cargar sugerencias:", err);
-        });
+      grid.innerHTML = html;
+    })
+    .catch(err => console.warn("Error al cargar sugerencias:", err));
 }
 
-
-
-document.addEventListener('DOMContentLoaded', cargarSugerencias);
+// Delegación de eventos para agregar al carrito
 document.addEventListener("click", function(e) {
   const btn = e.target.closest(".btnAgregarCarrito");
   if (!btn) return;
   e.preventDefault();
   const producto = JSON.parse(btn.getAttribute("data-producto"));
-  agregarAlCarritoDesdeFuente(producto, 1); // cantidad 1 por defecto
+  itemsCotizacion.push({ ...producto, cantidad: 1, subTotal: producto.amount });
+  listItems();
 });
+
+
+
+document.addEventListener('DOMContentLoaded', cargarSugerencias);
+
 
 
 
