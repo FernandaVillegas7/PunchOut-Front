@@ -15,6 +15,12 @@ function callApi(string $endpoint, array $data, array $options = [])
         throw new Exception("La clave API 'X-API-KEY' no está configurada");
     }
 
+<<<<<<< HEAD
+=======
+    $queryString = http_build_query($data);
+    $url = $url . '?' . $queryString;
+
+>>>>>>> ebfbab7a73410f4ca612316d95ca7bb6fbbc8e49
     $ch = curl_init();
 
    if ($method === 'POST') {
@@ -23,8 +29,12 @@ function callApi(string $endpoint, array $data, array $options = [])
     error_log("⚡ POST hacia: $url con body: $payload");  // 👈 ya existe $payload
 
     curl_setopt($ch, CURLOPT_URL, $url);
+<<<<<<< HEAD
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+=======
+    curl_setopt($ch, CURLOPT_HTTPGET, true);
+>>>>>>> ebfbab7a73410f4ca612316d95ca7bb6fbbc8e49
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
         'X-API-KEY: ' . $apiKey,
@@ -61,4 +71,8 @@ else {
 
     curl_close($ch);
     return $response;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> ebfbab7a73410f4ca612316d95ca7bb6fbbc8e49
