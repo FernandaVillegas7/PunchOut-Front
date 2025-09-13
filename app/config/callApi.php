@@ -2,6 +2,7 @@
 
 function callApi(string $endpoint, array $data, array $options = [])
 {
+ 
     // $options debe incluir 'routes' y 'apiKey'
     $routes = $options['routes'] ?? [];
     $apiKey = $options['apiKey'] ?? '';
@@ -15,32 +16,19 @@ function callApi(string $endpoint, array $data, array $options = [])
         throw new Exception("La clave API 'X-API-KEY' no está configurada");
     }
 
-<<<<<<< HEAD
-=======
-    $queryString = http_build_query($data);
-    $url = $url . '?' . $queryString;
-
->>>>>>> ebfbab7a73410f4ca612316d95ca7bb6fbbc8e49
     $ch = curl_init();
 
    if ($method === 'POST') {
-    $payload = json_encode($data);   // 👈 aquí se define SIEMPRE
-
-    error_log("⚡ POST hacia: $url con body: $payload");  // 👈 ya existe $payload
+    $payload = json_encode($data);  
 
     curl_setopt($ch, CURLOPT_URL, $url);
-<<<<<<< HEAD
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-=======
-    curl_setopt($ch, CURLOPT_HTTPGET, true);
->>>>>>> ebfbab7a73410f4ca612316d95ca7bb6fbbc8e49
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
         'X-API-KEY: ' . $apiKey,
     ]);
-}
-else {
+        } else {
         //  GET por defecto
         $queryString = http_build_query($data);
         $url = $url . (strpos($url, '?') === false ? '?' : '&') . $queryString;
@@ -60,9 +48,7 @@ else {
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; PHP cURL)');
 
     $response = curl_exec($ch);
-    error_log("⚡ RESPUESTA cruda: " . $response);
-
-
+   
     if (curl_errno($ch)) {
         $errorMessage = curl_error($ch);
         curl_close($ch);
@@ -71,8 +57,4 @@ else {
 
     curl_close($ch);
     return $response;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> ebfbab7a73410f4ca612316d95ca7bb6fbbc8e49
