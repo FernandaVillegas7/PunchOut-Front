@@ -273,7 +273,7 @@ function listItems() {
     $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
 }
 
-$('#').on('click', function(e){
+$('#btnSolicitar').on('click', function(e){
     e.preventDefault();
 
     // Construir y mostrar JSON similar a DetallesCarrito.js
@@ -568,7 +568,33 @@ document.addEventListener("click", function(e) {
 
 
 
-document.addEventListener('DOMContentLoaded', cargarSugerencias);
+document.addEventListener('DOMContentLoaded', () => {
+  // seguir mostrando sugerencias como antes
+  cargarSugerencias();
+
+  // capturar parámetros de la URL
+  const params = new URLSearchParams(window.location.search);
+  const clienteID = params.get("clienteID");
+  const carritoId = params.get("carritoId");
+
+  if (clienteID && carritoId) {
+    fetch(`app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`)
+      .then(res => res.json())
+      .then(data => {
+        const compras = Array.isArray(data) ? data : [data];
+        const carrito = compras.find(c => String(c.carritoExirosID) === carritoId);
+        if (carrito && carrito.items) {
+          cargarCarritoExistente(carrito);
+          console.log("✅ Carrito recargado:", carritoId);
+        } else {
+          console.warn("⚠️ No se encontró el carrito en la respuesta");
+        }
+      })
+      .catch(err => console.error("❌ Error cargando carrito existente:", err));
+  }
+});
+
+
 
 
 
@@ -609,3 +635,40 @@ function agregarAlCarritoDesdeFuente(fuente, cantidadFallback = 1) {
   itemsCotizacion.push(item);
   listItems();
 }
+
+// ⚡ Convierte un carrito de MisCompras a itemsCotizacion
+function cargarCarritoExistente(carrito) {
+  if (!carrito || !Array.isArray(carrito.items)) return;
+
+  // Limpia la lista actual
+  itemsCotizacion = [];
+
+  carrito.items.forEach(it => {
+    const precio = Number(it.unitPrice ?? it.itemPrice ?? 0);
+    const cantidad = Number(it.quantity ?? 1);
+
+    itemsCotizacion.push({
+      supplierPartID: it.supplierPartID || '',
+      buyerPartID: it.buyerPartID || '',
+      supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
+      currency: it.currency || 'MXN',
+      shortName: it.shortname || it.longname || '',
+      unitOfMeasure: it.unitOfMeasure || 'EA',
+      category: it.category || '',
+      codigoInterno: it.codigoArticulo || '',
+      longName: it.longname || it.shortname || '',
+      manufacturer: it.manufacturer || '',
+      manufacturerModelNumber: it.manufacturerModelNumber || '',
+      materialGroup: it.materialGroup || '',
+      amount: precio,
+      imagen: it.imagen || '',
+      cantidad: cantidad,
+      subTotal: Number((precio * cantidad).toFixed(2))
+    });
+  });
+
+  // ⚡ Refresca la tabla en Compra Rápida
+  listItems();
+}
+
+
