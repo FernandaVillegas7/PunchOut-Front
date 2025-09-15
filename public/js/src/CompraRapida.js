@@ -1,6 +1,6 @@
 // Configuración global
-const repoBase = '/AXEL-B2B-EXIROS-FRONT';
-// const repoBase = '/B2B-EXIROS-FRONT'; 
+//const repoBase = '/AXEL-B2B-EXIROS-FRONT';
+const repoBase = '/B2B-EXIROS-FRONT'; 
 const apiMisCompras = `${repoBase}/app/api/misCompras.php`;
 let currentClienteID = "";
 // Select2 de artículos (Exiros Search Products)
