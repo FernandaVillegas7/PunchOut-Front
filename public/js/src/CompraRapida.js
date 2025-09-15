@@ -1,3 +1,8 @@
+// Configuración global
+const repoBase = '/AXEL-B2B-EXIROS-FRONT';
+// const repoBase = '/B2B-EXIROS-FRONT'; 
+const apiMisCompras = `${repoBase}/app/api/misCompras.php`;
+let currentClienteID = "";
 // Select2 de artículos (Exiros Search Products)
 function formatResult(repo) {
     if (repo.loading) return repo.text;
@@ -187,6 +192,7 @@ function GenerarOCI_Quick(orderData) {
 // 3. Array de cotización
 let itemsCotizacion = [];
 
+
 // Maneja el click en "Agregar a la lista"
 $('#btnAgregar').on('click', function (e) {
   e.preventDefault();
@@ -357,106 +363,114 @@ $('#itemList').on('click', '.drop', function () {
 
 // C G R L
 //funcion para manejar el drawer de pedidos
+
+// Drawer de pedidos (basado en MisCompras)
 (function () {
-  const lista = document.getElementById('listaPedidos')
-  const inputBuscar = document.getElementById('buscarPedido')
+  const lista = document.getElementById('listaPedidos');
+  const inputBuscar = document.getElementById('buscarPedido');
 
-  const pedidos = [
-    { id: 'PO-3702266273', fecha: '2025-08-30', items: 4, total: 1580.40, estatus: 'Completado' },
-    { id: 'PO-3702266201', fecha: '2025-08-24', items: 2, total: 420.00,  estatus: 'Enviado' },
-    { id: 'PO-3702266155', fecha: '2025-08-17', items: 7, total: 3299.90, estatus: 'Completado' },
-  ]
-
-  const money = n => Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'})
-
-  function render(data){
-  lista.innerHTML = ''
-  if (!data.length) {
-    lista.innerHTML = `<li class="list-group-item text-muted">Sin pedidos</li>`
-    return
-  }
-
-  const money = n => Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'})
+  const money = n => Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'});
   const fmtFecha = iso => {
     try {
-      const d = new Date(iso)
-      return d.toLocaleDateString('es-MX', { year:'numeric', month:'short', day:'2-digit' })
+      const d = new Date(iso);
+      return d.toLocaleDateString('es-MX', { year:'numeric', month:'short', day:'2-digit' });
     } catch { return iso }
-  }
+  };
 
   const statusBadge = s => {
-    const k = (s||'').toLowerCase()
-    if (k.includes('complet')) return `<span class="badge-status badge-ok"><i class="fa-solid fa-circle-check"></i> Completado</span>`
-    if (k.includes('envi'))     return `<span class="badge-status badge-ship"><i class="fa-solid fa-truck"></i> Enviado</span>`
-    return `<span class="badge-status badge-pend"><i class="fa-solid fa-clock"></i> Pendiente</span>`
+    const k = (s||'').toLowerCase();
+    if (k.includes('entreg')) return `<span class="badge-status badge-ok"><i class="fa-solid fa-circle-check"></i> ${s}</span>`;
+    if (k.includes('rechaz')) return `<span class="badge-status badge-pend"><i class="fa-solid fa-ban"></i> ${s}</span>`;
+    if (k.includes('envi'))   return `<span class="badge-status badge-ship"><i class="fa-solid fa-truck"></i> ${s}</span>`;
+    if (k.includes('compr'))  return `<span class="badge-status badge-ship"><i class="fa-solid fa-cart-shopping"></i> ${s}</span>`;
+    return `<span class="badge-status badge-pend"><i class="fa-solid fa-clock"></i> ${s||'Pendiente'}</span>`;
+  };
+
+ function render(data){
+  lista.innerHTML = '';
+  if (!data.length) {
+    lista.innerHTML = `<li class="list-group-item text-muted">Sin compras</li>`;
+    return;
   }
 
-  const thumb = p => {
-    return p.thumb || 'public/img/logo.png'
-  }
+  data.forEach(c => {
+    const li = document.createElement('li');
+    li.className = 'pedido-item list-group-item';
 
-  data.forEach(p => {
-    const li = document.createElement('li')
-    li.className = 'pedido-item'
+    const fecha = c.fechaCreacion || c.fecha || "";
+    const productos = (c.items || []).length;
+    const total = (c.items||[]).reduce((s,it)=>
+      s + (Number(it.unitPrice||it.itemPrice)||0) * (Number(it.quantity)||0),0);
+
     li.innerHTML = `
-      <div class="pedido-card">
-        <img class="pedido-thumb" src="${thumb(p)}" alt="Miniatura del pedido ${p.id}" loading="lazy">
-
-        <div>
-          <div class="pedido-title">${p.id}</div>
-          <div class="pedido-meta">
-            <i class="fa-regular fa-calendar"></i> ${fmtFecha(p.fecha)}
-            &nbsp;·&nbsp;<i class="fa-solid fa-boxes-stacked"></i> ${p.items} artículos
-            &nbsp;·&nbsp; ${statusBadge(p.estatus)}
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          <img class="pedido-thumb rounded" 
+               src="public/img/logo.png" 
+               alt="Carrito ${c.carritoExirosID}" 
+               width="48" height="48">
+          <div>
+            <div class="fw-semibold">Carrito #${c.carritoExirosID}</div>
+            <div class="small text-muted">
+              <i class="fa-regular fa-calendar"></i> ${fmtFecha(fecha)}
+              &nbsp;·&nbsp; Folio: ${c.folioCotizacion || '—'}
+              &nbsp;·&nbsp; ${productos} producto${productos!==1 ? 's' : ''}
+              &nbsp;·&nbsp; ${statusBadge(c.estado?.nombre || '')}
+            </div>
           </div>
         </div>
-
-        <div>
-          <div class="pedido-price">${money(p.total)}</div>
-          <div class="pedido-actions">
-            <button class="btn btn-outline-primary btn-sm btn-ver" title="Ver detalle">
-              <i class="fa-regular fa-eye"></i> Ver
-            </button>
-            <button class="btn btn-dark btn-sm btn-reordenar" title="Reordenar">
-              <i class="fa-solid fa-rotate-right"></i> Reordenar
-            </button>
+        <div class="text-end">
+          <div class="fw-semibold">${money(total)}</div>
+          <div class="mt-1">
+            <a class="btn btn-outline-danger btn-sm" 
+               href="misCompras?clienteID=${encodeURIComponent(c.clienteID||'')}">Ver
+              <i class="fa-regular fa-eye"></i>
+            </a>
+          <a class="btn btn-dark btn-sm" 
+            href="${repoBase}/cotizar?clienteID=${encodeURIComponent(currentClienteID)}&carritoId=${encodeURIComponent(c.carritoExirosID)}">
+            Cargar <i class="fa-solid fa-rotate-right"></i>
+          </a>
           </div>
         </div>
       </div>
-    `
+    `;
 
-    li.querySelector('.btn-ver').addEventListener('click', (e) => {
-      e.stopPropagation()
-      console.log('Ver detalle', p.id)
-
-    })
-    li.querySelector('.btn-reordenar').addEventListener('click', (e) => {
-      e.stopPropagation()
-      console.log('Reordenar', p.id)
-
-    })
-
-   
-    li.addEventListener('click', () => {
-      console.log('Abrir pedido', p.id)
-    })
-
-    lista.appendChild(li)
-  })
+    lista.appendChild(li);
+  });
 }
 
 
-  render(pedidos)
+  async function cargarPedidos(clienteID){
+    try {
+      const res = await fetch(`/AXEL-B2B-EXIROS-FRONT/app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`);
+      const data = await res.json();
+      render(Array.isArray(data)? data : [data]);
+    } catch(err){
+      console.error(" Error cargando pedidos:",err);
+      lista.innerHTML = `<li class="list-group-item text-danger">Error al cargar</li>`;
+    }
+  }
 
-  inputBuscar?.addEventListener('input', e => {
-    const q = e.target.value.trim().toLowerCase()
-    const f = !q ? pedidos : pedidos.filter(p =>
-      (p.id + p.fecha + p.estatus).toLowerCase().includes(q)
-    )
-    render(f)
-  })
+  //  Buscar cliente y cargar pedidos
+  inputBuscar?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const clienteID = inputBuscar.value.trim();
+      if (clienteID) {
+        currentClienteID = clienteID;
+        cargarPedidos(clienteID);
+      }
+    }
+  });
 
-})()
+  // carga demo opcional
+  //cargarPedidos("CL-00078");
+
+})();
+
+
+
+
 
 
 
@@ -585,12 +599,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const carrito = compras.find(c => String(c.carritoExirosID) === carritoId);
         if (carrito && carrito.items) {
           cargarCarritoExistente(carrito);
-          console.log("✅ Carrito recargado:", carritoId);
+          console.log("Carrito recargado:", carritoId);
         } else {
-          console.warn("⚠️ No se encontró el carrito en la respuesta");
+          console.warn(" No se encontró el carrito en la respuesta");
         }
       })
-      .catch(err => console.error("❌ Error cargando carrito existente:", err));
+      .catch(err => console.error(" Error cargando carrito existente:", err));
   }
 });
 
@@ -636,7 +650,7 @@ function agregarAlCarritoDesdeFuente(fuente, cantidadFallback = 1) {
   listItems();
 }
 
-// ⚡ Convierte un carrito de MisCompras a itemsCotizacion
+// Convierte un carrito de MisCompras a itemsCotizacion
 function cargarCarritoExistente(carrito) {
   if (!carrito || !Array.isArray(carrito.items)) return;
 
@@ -667,7 +681,7 @@ function cargarCarritoExistente(carrito) {
     });
   });
 
-  // ⚡ Refresca la tabla en Compra Rápida
+  // Refresca la tabla en Compra Rápida
   listItems();
 }
 

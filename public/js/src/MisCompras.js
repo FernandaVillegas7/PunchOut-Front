@@ -1,13 +1,13 @@
 // Configuración global
 const repoBase = '/AXEL-B2B-EXIROS-FRONT';
-// const repoBase = '/B2B-EXIROS-FRONT'; // ← usa esta línea en tu otro ambiente
+// const repoBase = '/B2B-EXIROS-FRONT'; 
 const apiMisCompras = `${repoBase}/app/api/misCompras.php`;
 
 let comprasCache = []; // aquí guardamos todas las compras que vienen del API
 let currentClienteID = "";
 
 (function () {
-  // 🔧 Utilidades
+  // Utilidades
   function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
   function fmtMoney(v, currency) {
     try {
@@ -369,12 +369,12 @@ async function init() {
     });
   }
 
-  // 🔎 Filtro dinámico por folio / número carrito
+  // Filtro dinámico por folio / número carrito
   if (folioInput) {
     folioInput.addEventListener("input", () => buscar());
   }
 
-  // 🔎 Filtros por fecha
+  // Filtros por fecha
   if (fechaDesde) fechaDesde.addEventListener("change", () => buscar());
   if (fechaHasta) fechaHasta.addEventListener("change", () => buscar());
 

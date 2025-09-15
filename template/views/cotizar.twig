@@ -519,12 +519,24 @@
     </h5>
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
   </div>
-  <div class="offcanvas-body p-0 d-flex flex-column">
-    <div class="p-3">
-      <input id="buscarPedido" type="search" class="form-control form-control-sm" placeholder="Buscar pedido…">
+      <div class="offcanvas-body p-0 d-flex flex-column">
+        <div class="p-3 bg-light border-bottom">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="fa-solid fa-magnifying-glass text-muted"></i>
+        </span>
+        <input id="buscarPedido" type="search" 
+              class="form-control border-start-0" 
+              placeholder="Ingrese código de cliente">
+        <button class="btn btn-danger" id="btnBuscarPedido" type="button">
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+      <small class="form-text text-muted ms-1">
+        Escriba el código de cliente y presione <kbd>Enter</kbd> o el botón.
+      </small>
     </div>
     <ul id="listaPedidos" class="list-group list-group flush-border-top">
-
     </ul>
   </div>
 </div>
