@@ -203,36 +203,13 @@ $('#btnAgregar').on('click', function (e) {
   if (!producto || producto.id === '-1') { alert('Selecciona un artículo.'); return; }
   if (!cantidad || cantidad <= 0)        { alert('Ingresa una cantidad válida.'); return; }
 
-  // Inyecta la cantidad al objeto Select2 y reusa la misma lógica
   producto.cantidad = cantidad;
-  agregarAlCarritoDesdeFuente(producto);
+  agregarAlCarritoDesdeFuente(producto); // ya hace push y calcula subtotal
 
-    // Agrega al array de cotización con los campos del payload Exiros
-    itemsCotizacion.push({
-        supplierPartID: producto.supplierPartID,
-        buyerPartID: producto.buyerPartID,
-        supplierPartAuxiliaryID: producto.supplierPartAuxiliaryID,
-        currency: currency,
-        shortName: producto.shortName,
-        unitOfMeasure: producto.unitOfMeasure,
-        category: producto.category,
-        codigoInterno: producto.codigoInterno,
-        longName: producto.longName,
-        manufacturer: producto.manufacturer,
-        manufacturerModelNumber: producto.manufacturerModelNumber,
-        materialGroup: producto.materialGroup,
-        amount: precio,
-        imagen: producto.imagen,
-        cantidad: cantidad,
-        subTotal: subTotal
-    });
-
-    // Limpia el campo de cantidad
-    $('#cantidad').val('1');
-
-    // Actualiza la tabla de cotización
-    listItems();
+  $('#cantidad').val('1');
+  listItems();
 });
+
 
 function listItems() {
   let row = `<tr>

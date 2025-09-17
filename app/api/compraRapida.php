@@ -15,20 +15,20 @@ try {
 
     switch ($method) {
 
-        // case 'compra-rapida':
-        //     if ($requestMethod == 'POST') {
-        //         $data = json_decode($input, true);
+         case 'compra-rapida':
+             if ($requestMethod == 'POST') {
+                 $data = json_decode($input, true);
 
-        //         // Espera un array de productos
-        //         if (!is_array($data)) {
-        //             throw new UnexpectedValueException("Se esperaba un arreglo de productos");
-        //         }
+                 // Espera un array de productos
+                 if (!is_array($data)) {
+                     throw new UnexpectedValueException("Se esperaba un arreglo de productos");
+                 }
 
-        //         // ENVÍA TODO EL ARRAY DE PRODUCTOS DE UNA SOLA VEZ
-        //         $controller->compraRapida($data);
-        //         exit;
-        //     }
-        //     break;
+                 // ENVÍA TODO EL ARRAY DE PRODUCTOS DE UNA SOLA VEZ
+                 $controller->compraRapida($data);
+                 exit;
+             }
+             break;
 
         default:
             throw new UnexpectedValueException("Método desconocido");
