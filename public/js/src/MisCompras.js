@@ -108,7 +108,7 @@ async function cambiarEstadoCarrito(apiUrl, carritoId, nuevoEstadoId) {
 
           //FechaCracion
           const fechaCreacion = compra.fechaCreacion || compra.fecha || null;
-          console.log(compra);
+          
 
           const rows = items.map((it, idx2) => `
             <tr>
@@ -205,14 +205,14 @@ function bindEventosCambiarEstado(api, root) {
     badge.addEventListener("click", async (e) => {
       const carritoId = e.target.getAttribute("data-carrito");
 
-      const select = document.createElement("select");
-      select.className = "form-select form-select-sm";
-      select.innerHTML = `<option value="">Seleccione estado...</option>`;
+      //const select = document.createElement("select");
+     // select.className = "form-select form-select-sm";
+     // select.innerHTML = `<option value="">Seleccione estado...</option>`;
 
       try {
         const estados = await fetchEstados(api);
         estados.forEach(est => {
-          select.innerHTML += `<option value="${est.estadoCarrito}">${est.nombre}</option>`;
+       //   select.innerHTML += `<option value="${est.estadoCarrito}">${est.nombre}</option>`;
         });
       } catch (err) {
         console.error("Error cargando estados:", err);
@@ -228,19 +228,14 @@ function bindEventosCambiarEstado(api, root) {
         }
 
         try {
-          console.log("Disparando cambio de estado");
-          console.log("CarritoID:", carritoId, "Nuevo estado ID:", nuevoEstadoId);
-
           const resp = await cambiarEstadoCarrito(api, carritoId, nuevoEstadoId);
-          console.log("Respuesta cambiarEstadoCarrito:", resp);
-
           const actualizado = comprasCache.find(c => c.carritoExirosID == carritoId);
          
           if (actualizado) {
             actualizado.estado = resp.data;
-            console.log("Estado actualizado en cache:", actualizado.estado);
+           // console.log("Estado actualizado en cache:", actualizado.estado);
           } else {
-            console.warn("No se encontró el carrito en comprasCache con ID:", carritoId);
+            //console.warn("No se encontró el carrito en comprasCache con ID:", carritoId);
           }
 
           const rootNode = byId("comprasRoot");
@@ -249,15 +244,12 @@ function bindEventosCambiarEstado(api, root) {
             return;
           }
           
-          console.log("Root antes de repintar:", rootNode);
-
           rootNode.innerHTML = buildCompraAccordion(comprasCache, currentClienteID);
-          console.log("DOM repintado con acordeón");
+          // console.log("DOM repintado con acordeón");
 
           bindEventosCambiarEstado(api, rootNode); //usar el nuevo rootNode aquí
-          console.log("Eventos re-enganchados");
         } catch (err) {
-          console.error("Error al cambiar el estado:", err);
+          // console.error("Error al cambiar el estado:", err);
           alert("Error cambiando estado: " + err.message);
         }
       });
@@ -287,7 +279,17 @@ async function init() {
     const estadoSeleccionado = selectEstatus ? selectEstatus.value : "";
     const desde = fechaDesde ? fechaDesde.value : "";
     const hasta = fechaHasta ? fechaHasta.value : "";
-    
+    // Dentro de buscar() o después de renderizar el acordeón
+const params = new URLSearchParams(window.location.search)
+const carritoIdParam = params.get("carritoId")
+
+if (carritoIdParam) {
+  const accBtn = document.querySelector(`#hdr-${carritoIdParam} .accordion-button`)
+  if (accBtn) {
+    accBtn.click() // 👈 despliega el acordeón del carrito
+    accBtn.scrollIntoView({ behavior: "smooth", block: "center" })
+  }
+}
 
     if (!clienteID) {
       root.innerHTML = `<div class="alert alert-secondary" role="alert">

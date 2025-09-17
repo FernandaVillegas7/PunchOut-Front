@@ -182,7 +182,7 @@ function GenerarOCI_Quick(orderData) {
     });
 
     document.body.appendChild(form);
-    console.log(form.outerHTML);
+  
     if (hookUrl) {
         HTMLFormElement.prototype.submit.call(form);
     }
@@ -235,49 +235,56 @@ $('#btnAgregar').on('click', function (e) {
 });
 
 function listItems() {
-    let row = `<tr>
-        <td colspan="8">No se ha ingresado ningun articulo</td>
-    </tr>`;
+  let row = `<tr>
+      <td colspan="8">No se ha ingresado ningun articulo</td>
+  </tr>`;
 
-    let total = 0;
-    let currency = 'MXN';
+  let total = 0;
+  let currency = 'MXN';
 
-    if (itemsCotizacion.length > 0) {
-        row = '';
-        currency = itemsCotizacion[0].currency || 'MXN';
-        itemsCotizacion.forEach((item, index) => {
-            total += Number(item.subTotal || 0);
+  if (itemsCotizacion.length > 0) {
+    row = '';
+    currency = itemsCotizacion[0].currency || 'MXN';
+    itemsCotizacion.forEach((item, index) => {
+      total += Number(item.subTotal || 0);
 
-            const imgSrc = item.imagen || (item.supplierPartID && item.codigoInterno
-                ? `https://mersolsureste.com.mx/articulos/index.php?clave=${encodeURIComponent(item.supplierPartID)}&img=${encodeURIComponent(item.codigoInterno)}`
-                : '');
+      const imgSrc = item.imagen || (item.supplierPartID && item.codigoInterno
+        ? `https://mersolsureste.com.mx/articulos/index.php?clave=${encodeURIComponent(item.supplierPartID)}&img=${encodeURIComponent(item.codigoInterno)}`
+        : '');
 
-            row += `<tr>
-                <td>${index + 1}</td>
-                <td>${item.codigoInterno || ''}</td>
-                <td class="d-none">${item.codigoInterno || ''}</td>
-                <td>${item.manufacturer || ''}</td>
-                <td>${item.shortName || ''}</td>
-                <td>${item.unitOfMeasure || ''}</td>
-                <td>$ ${Number(item.amount || 0).toFixed(2)} ${item.currency || ''}</td>
-                <td>${item.cantidad || ''}</td>
-                <td>$ ${Number(item.subTotal || 0).toFixed(2)} ${item.currency || ''}</td>
-                <td>
-                    <img alt="${item.shortName || ''}" class="img-fluid" style="max-width:64px;max-height:64px;object-fit:cover;" src="${imgSrc}">
-                </td>
-                <td>
-                    <button class="btn btn-danger btn-sm drop" data-index="${index}">
-                        <i class="fa-solid fa-circle-minus"></i>
-                    </button>
-                </td>
-            </tr>`;
-        });
-    }
+      row += `<tr>
+          <td>${index + 1}</td>
+          <td>${item.codigoInterno || ''}</td>
+          <td class="d-none">${item.codigoInterno || ''}</td>
+          <td>${item.manufacturer || ''}</td>
+          <td>${item.shortName || ''}</td>
+          <td>${item.unitOfMeasure || ''}</td>
+          <td>$ ${Number(item.amount || 0).toFixed(2)} ${item.currency || ''}</td>
+          <td>
+            <input type="number" class="form-control form-control-sm input-cantidad" 
+                   data-index="${index}" 
+                   value="${item.cantidad || 1}" 
+                   min="1" style="width:80px;">
+          </td>
+          <td>$ ${Number(item.subTotal || 0).toFixed(2)} ${item.currency || ''}</td>
+          <td>
+              <img alt="${item.shortName || ''}" class="img-fluid" 
+                   style="max-width:64px;max-height:64px;object-fit:cover;" 
+                   src="${imgSrc}">
+          </td>
+          <td>
+              <button class="btn btn-danger btn-sm drop" data-index="${index}">
+                  <i class="fa-solid fa-circle-minus"></i>
+              </button>
+          </td>
+      </tr>`;
+    });
+  }
 
-    $('#itemList').html(row);
-    // Puedes mostrar un total general si es útil (aunque la tabla solicitada no lo requiere)
-    $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
+  $('#itemList').html(row);
+  $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
 }
+
 
 $('#btnSolicitar').on('click', function(e){
     e.preventDefault();
@@ -313,7 +320,7 @@ $('#btnSolicitar').on('click', function(e){
             $wrap.show();
         }
         window.quickCartPreview = previewPayload;
-        console.log('QuickCart JSON preview:', previewPayload);
+      
     } catch (err) {
         console.warn('No se pudo generar la vista previa JSON:', err);
     }
@@ -338,7 +345,7 @@ $('#btnSolicitar').on('click', function(e){
         data: JSON.stringify(itemsConPartida),
         contentType: "application/json",
         success: function(response) {
-            console.log(response);
+            
             if (response.isError) {
                 alert(response.message || "Ocurrió un error al procesar la compra.");
             } else {
@@ -355,10 +362,24 @@ $('#btnSolicitar').on('click', function(e){
 });
 
 // Elimina artículo de la lista
+// Delegación de evento para editar cantidad
+$('#itemList').on('input','.input-cantidad', function () {
+  const idx = $(this).data('index');
+  const nuevaCantidad = Number($(this).val()) || 1;
+
+  if (itemsCotizacion[idx]) {
+    itemsCotizacion[idx].cantidad = nuevaCantidad;
+    itemsCotizacion[idx].subTotal = Number((itemsCotizacion[idx].amount * nuevaCantidad).toFixed(2));
+  }
+
+  // Vuelve a repintar la tabla
+  listItems();
+});
+// Evento: eliminar producto
 $('#itemList').on('click', '.drop', function () {
-    const idx = $(this).data('index');
-    itemsCotizacion.splice(idx, 1);
-    listItems();
+  const idx = $(this).data('index');
+  itemsCotizacion.splice(idx, 1);
+  listItems();
 });
 
 // C G R L
@@ -442,7 +463,7 @@ $('#itemList').on('click', '.drop', function () {
 
   async function cargarPedidos(clienteID){
     try {
-      const res = await fetch(`/AXEL-B2B-EXIROS-FRONT/app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`);
+      const res = await fetch(`/B2B-EXIROS-FRONT/app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`);
       const data = await res.json();
       render(Array.isArray(data)? data : [data]);
     } catch(err){
@@ -598,15 +619,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const compras = Array.isArray(data) ? data : [data];
         const carrito = compras.find(c => String(c.carritoExirosID) === carritoId);
         if (carrito && carrito.items) {
-          cargarCarritoExistente(carrito);
-          console.log("Carrito recargado:", carritoId);
+          // 👇 ahora clonamos los productos como nuevos
+          clonarCarritoComoNuevo(carrito);
+          //console.log("Carrito recargado como nuevo:", carritoId);
         } else {
-          console.warn(" No se encontró el carrito en la respuesta");
+          // console.warn("No se encontró el carrito en la respuesta");
         }
       })
-      .catch(err => console.error(" Error cargando carrito existente:", err));
+      .catch(err => console.error("Error cargando carrito existente:", err));
   }
 });
+
+
 
 
 
@@ -686,3 +710,50 @@ function cargarCarritoExistente(carrito) {
 }
 
 
+async function clonarCarritoComoNuevo(carritoAnterior) {
+  if (!carritoAnterior || !Array.isArray(carritoAnterior.items)) return;
+
+  // Limpia el carrito actual para empezar uno nuevo
+  itemsCotizacion = [];
+
+  for (const it of carritoAnterior.items) {
+    const codigo = it.codigoArticulo || it.supplierPartID || "";
+
+    try {
+      // Buscar el producto en la API por código
+      const url = `app/api/b2b.php?method=GetExirosProducts&pageSize=1&pageNumber=0&search=${encodeURIComponent(codigo)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const producto = (data.products && data.products[0]) || null;
+      if (!producto) {
+        console.warn(`No se encontró el producto ${codigo}, usando datos heredados`);
+        // Si no existe en catálogo, usamos lo que venga en el carrito viejo
+        agregarAlCarritoDesdeFuente({
+          supplierPartID: it.supplierPartID,
+          codigoInterno: it.codigoArticulo,
+          shortName: it.shortname,
+          longName: it.longname,
+          manufacturer: it.manufacturer,
+          amount: it.unitPrice || it.itemPrice,
+          unitOfMeasure: it.unitOfMeasure,
+          imagen: it.imagen,
+          cantidad: it.quantity
+        }, it.quantity);
+        continue;
+      }
+
+      // Inyectar cantidad y precio heredados en el producto encontrado
+      producto.cantidad = Number(it.quantity || 1);
+      producto.amount   = Number(it.unitPrice || it.itemPrice || producto.amount);
+
+      // Reusar función normalizadora
+      agregarAlCarritoDesdeFuente(producto, producto.cantidad);
+    } catch (err) {
+      console.error("Error buscando producto", codigo, err);
+    }
+  }
+
+  // Actualizar tabla visual
+  listItems();
+}

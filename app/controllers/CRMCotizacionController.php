@@ -25,7 +25,7 @@ class CRMCotizacionController extends BaseController
         $routes = method_exists($this, 'getApiRutes') ? $this->getApiRutes() : [];
         $apiKey = method_exists($this, 'getXApiKey')  ? $this->getXApiKey()  : '';
         
-        echo "[DEBUG] Enviando a callApi... \n"; flush();
+       
         return callApiCRM(
             'exiros-Cotizacion-carrito', 
             $data,

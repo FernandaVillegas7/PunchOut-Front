@@ -1,3 +1,5 @@
+let currentClienteID = "";
+
 (function () {
   // =========================
   // Utilidades
@@ -44,6 +46,7 @@
     }))
     const sess = window.PunchoutSession || {}
     return {
+      ClienteID: cot.clienteID?.trim() || window.currentClienteID?.trim() || null,
       HookUrl: window.BrowserFormPostUrl || sess.HookUrl|| "-",
       Username: window.Username ||  "-",
       Password: window.Password ||  "-",
@@ -210,7 +213,7 @@
   // ===================================
   async function cargarDesdeInput() {
     const root = byId('comprasRoot')
-    const apiBase = root.getAttribute('data-api') || '/b2b-exiros-front/app/api/cotizacionCRM.php'
+    const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
  
     const claveInput = byId('claveC')
     const clienteId = (claveInput?.value || '').trim()
@@ -220,6 +223,8 @@
       return
     }
  
+    currentClienteID = clienteId
+
     root.innerHTML = `<div class="text-center text-muted py-5 skeleton">Cargando cotizaciones…</div>`
     try {
       const data = await fetchCotizaciones(apiBase, clienteId)
@@ -255,56 +260,111 @@
   // =========================
   // POST a tu endpoint PHP (?method=exiros-Cotizacion-carrito)
   // =========================
-  async function postCompra(apiBase, payload, btn) {
-    const url = `/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php?method=exiros-Cotizacion-carrito`
-    const old = btn.innerHTML
-    btn.disabled = true
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Procesando…`
- 
-    try {
-      const payloadCorregido = {
-          ...payload,
-          Extrinsics: JSON.stringify(payload.Extrinsics || {}),
-          StatusResponse: JSON.stringify(payload.StatusResponse || 'OK')
-      }
- 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          'Accept': 'application/json'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify(payloadCorregido)
-      })
- 
-      const txt = await res.text()
-      let json
-      try {
-        json = JSON.parse(txt)
-      } catch (errJson) {
-        json = { raw: txt }
-      }
- 
- 
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} :: ${txt}`)
- 
-      const alertBox = document.getElementById('alertCompra')
-      if (alertBox) {
-        alertBox.style.display = 'block'
-        alertBox.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        setTimeout(() => {
-          alertBox.style.display = 'none'
-        }, 5000)
-      }
- 
-    } catch (err) {
-      console.error(err)
-    } finally {
-      btn.disabled = false
-      btn.innerHTML = old
+ async function postCompra(apiBase, payload, btn) {
+  const url = `${apiBase}?method=exiros-Cotizacion-carrito`
+  console.log("POST a:", url, payload)
+
+  const old = btn.innerHTML
+  const clienteID = currentClienteID || payload.Username || ""
+
+  btn.disabled = true
+  btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Procesando…`
+
+  try {
+    const payloadCorregido = {
+      ...payload,
+      Extrinsics: JSON.stringify(payload.Extrinsics || {}),
+      StatusResponse: JSON.stringify(payload.StatusResponse || 'OK')
     }
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        'Accept': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(payloadCorregido)
+    })
+
+const txt = await res.text()
+let json
+try {
+  json = JSON.parse(txt)
+} catch {
+  console.warn("Respuesta no JSON:", txt)
+  json = {}
+}
+
+if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} :: ${txt}`)
+
+
+
+// Forzar que se reconozca si `data` es un número (carrito ID)
+const carritoId = (typeof json.data === 'number') ? json.data
+  : (json.data?.carritoExirosID || json.carritoExirosID || null)
+
+// Extraer cliente
+let clienteFinal = currentClienteID || payload.ClienteID || payload.Username || null
+if (!clienteFinal || clienteFinal === "-" || clienteFinal === "") {
+ // console.warn("⚠ ClienteID no válido, redirigiendo sin él")
+  clienteFinal = null
+}
+
+//  Redirección segura
+if (carritoId) {
+  const redirectUrl = clienteFinal
+    ? `/B2B-EXIROS-FRONT/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(carritoId)}`
+    : `/B2B-EXIROS-FRONT/misCompras?carritoId=${encodeURIComponent(carritoId)}`
+  // console.log("Redireccionando a:", redirectUrl)
+  window.location.href = redirectUrl
+} else {
+ // console.warn("No se recibió carritoId válido", json)
+ // alert("La compra se guardó, pero no se devolvió un ID de carrito válido.")
+}
+
+
+
+  } catch (err) {
+    console.error(err)
+    alert("Error al procesar la compra: " + err.message)
+  } finally {
+    btn.disabled = false
+    btn.innerHTML = old
   }
+}
+
+function initProcesarCompra() {
+  const root = byId('comprasRoot')
+  if (!root) return
+
+  const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+
+  root.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-procesar-compra')
+    if (!btn) return
+
+    const folio = btn.dataset.folio
+    const cot = cotIndex.get(folio)
+    if (!cot) {
+      alert('No se encontró la cotización.')
+      return
+    }
+
+    const payload = buildGuardarCompraPayload(cot)
+    
+
+    // ⚠️ cuidado: GenerarOCI(payload) hace submit y redirige
+    // GenerarOCI(payload)
+    postCompra(apiBase, payload, btn)
+  })
+}
+
+document.addEventListener('DOMContentLoaded', init)
+
+
+
+ 
  
   // ============================
   // ARMA el PAYLOAD y se ENVÍA
@@ -313,7 +373,7 @@
     const root = byId('comprasRoot')
      if (!root) return
  
-    const apiBase = root.getAttribute('data-api') || '/b2c/app/api/cotizacionCRM.php'
+    const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
  
     root.addEventListener('click', (e) => {
       const btn = e.target.closest('.btn-procesar-compra')
@@ -321,16 +381,14 @@
  
       const folio = btn.dataset.folio
       const cot = cotIndex.get(folio)
-      console.log("[CLICK] Botón de procesar compra presionado")
-      console.log("Folio:", folio)
-      console.log("Cotización encontrada:", cot)
+      
       if (!cot) {
                   alert('No se encontró la cotización.')
                   return
                 }
  
       const payload = buildGuardarCompraPayload(cot)
-      console.log("[BUILD] Payload generado:", payload)
+      
       GenerarOCI(payload)
       postCompra(apiBase, payload, btn)
     })
@@ -428,10 +486,10 @@ function GenerarOCI(cot) {
  
   document.body.appendChild(form);
  
-  // Debug visual en consola
-  console.log("[OCI FORM HTML]\n", form.outerHTML);
+  
  
   if (hookUrl) {
+    form.target = "_blank";
     HTMLFormElement.prototype.submit.call(form);
   }
   return form;
