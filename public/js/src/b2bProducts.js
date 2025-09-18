@@ -37,6 +37,11 @@ if (sessionId) {
         success: function (response) {
             if (response && !response.error) {
                 console.log(`Sesión validada: `, response);
+                // Almacenar HOOK_URL globalmente para uso en toda la aplicación
+                if (response.HOOK_URL) {
+                    window.HOOK_URL = response.HOOK_URL;
+                    window.BrowserFormPostUrl = response.HOOK_URL; // Mantener compatibilidad
+                }
                 // Aquí puedes mostrar datos del usuario si lo deseas
             } else {
                 console.log(`Sesión error: `, response.error);
@@ -96,7 +101,7 @@ function renderProductItem(p) {
     `;
 }
 
-// Función para cargar productos
+// Función para cargar productos con reintentos automáticos
 function fetchProducts(page, append = false) {
     if (loading) return;
     setSearchLoading(true);
@@ -112,38 +117,83 @@ function fetchProducts(page, append = false) {
         category: currentCategory
     });
 
-    $.ajax({
-        type: "GET",
-        url: `app/api/b2b.php?method=GetExirosProducts&${params.toString()}${sessionId ? `&SessionID=${encodeURIComponent(sessionId)}` : ''}`,
-        dataType: "json",
-        success: function (response) {
-            if (response && response.products) {
-                let html = "";
-                response.products.forEach(function (p) {
-                    html += renderProductItem(p);
-                });
-                if (append) {
-                    $(".itemScroll").append(html);
+    function attemptFetch(retryCount = 0) {
+        $.ajax({
+            type: "GET",
+            url: `app/api/b2b.php?method=GetExirosProducts&${params.toString()}${sessionId ? `&SessionID=${encodeURIComponent(sessionId)}` : ''}`,
+            dataType: "json",
+            success: function (response) {
+                if (response && response.products) {
+                    let html = "";
+                    response.products.forEach(function (p) {
+                        html += renderProductItem(p);
+                    });
+                    if (append) {
+                        $(".itemScroll").append(html);
+                    } else {
+                        $(".itemScroll").html(html);
+                    }
+                    $("#btnShowMore").toggle(response.products.length > 0);
                 } else {
-                    $(".itemScroll").html(html);
+                    $(".itemScroll").html("<div>No se encontraron productos.</div>");
+                    $("#btnShowMore").hide();
                 }
-                $("#btnShowMore").toggle(response.products.length > 0);
-            } else {
-                $(".itemScroll").html("<div>No se encontraron productos.</div>");
+                loading = false;
+                setSearchLoading(false);
+                $(".exiros-cat").prop("disabled", false);
+            },
+            error: function (xhr, status, error) {
+                console.log('Error en fetchProducts:', xhr.responseText);
+                
+                // Determinar si es un error que puede beneficiarse de reintentos
+                const shouldRetry = (
+                    xhr.status === 500 || // Error interno del servidor
+                    xhr.status === 400 || // Bad Request (posibles problemas de transacción)
+                    xhr.status === 502 || // Bad Gateway
+                    xhr.status === 503 || // Service Unavailable
+                    xhr.status === 504 || // Gateway Timeout
+                    status === 'timeout' || // Timeout de la petición
+                    status === 'error' && !xhr.status // Error de red sin código específico
+                );
+                
+                if (shouldRetry && retryCount < 4) {
+                    console.log(`Reintentando carga de productos (intento ${retryCount + 1}/5) - Error ${xhr.status || status}...`);
+                    setTimeout(function() {
+                        attemptFetch(retryCount + 1);
+                    }, 1000 * (retryCount + 1)); // Espera incremental: 1s, 2s, 3s, 4s
+                    return;
+                }
+                
+                // Error final - mostrar mensaje apropiado según el tipo de error
+                let errorMessage = 'Error temporal del servidor';
+                if (xhr.status === 400) {
+                    errorMessage = 'Error de procesamiento de datos';
+                } else if (xhr.status >= 500) {
+                    errorMessage = 'Error interno del servidor';
+                } else if (status === 'timeout') {
+                    errorMessage = 'Tiempo de espera agotado';
+                }
+                
+                $(".itemScroll").html(`
+                    <div class="alert alert-warning text-center">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <strong>${errorMessage}</strong><br>
+                        <small>Código: ${xhr.status || 'Red'} - Intenta recargar la página o buscar de nuevo</small>
+                        <br><button class="btn btn-sm btn-outline-primary mt-2" onclick="location.reload()">
+                            <i class="fa fa-refresh"></i> Recargar
+                        </button>
+                    </div>
+                `);
                 $("#btnShowMore").hide();
-            }
-            loading = false;
-            setSearchLoading(false);
-            $(".exiros-cat").prop("disabled", false); // ✅ reactivar categorías
-        },
-        error: function () {
-            $(".itemScroll").html("<div>Error al cargar productos.</div>");
-            $("#btnShowMore").hide();
-            loading = false;
-            setSearchLoading(false);
-            $(".exiros-cat").prop("disabled", false); // ✅ reactivar categorías
-        },
-    });
+                loading = false;
+                setSearchLoading(false);
+                $(".exiros-cat").prop("disabled", false);
+            },
+        });
+    }
+    
+    // Iniciar el primer intento
+    attemptFetch();
 }
 
 
@@ -197,30 +247,79 @@ $(document).ready(function () {
         $("#productSearchForm").submit();
     });
 
-    $.getJSON(`app/api/exiros.php?method=ExirosGetCategorias${sessionId ? `&SessionID=${encodeURIComponent(sessionId)}` : ''}`)
-        .done(function (resp) {
-            const $container = $('#exiros-categories');
-            if (!resp || resp.isError || !Array.isArray(resp.data)) {
-                $container.html('<div class="text-muted small">No hay categorías disponibles</div>');
-                return;
-            }
+    // Función para cargar categorías con reintentos automáticos
+    function fetchCategories(retryCount = 0) {
+        $.ajax({
+            type: "GET",
+            url: `app/api/exiros.php?method=ExirosGetCategorias${sessionId ? `&SessionID=${encodeURIComponent(sessionId)}` : ''}`,
+            dataType: "json",
+            success: function (resp) {
+                const $container = $('#exiros-categories');
+                if (!resp || resp.isError || !Array.isArray(resp.data)) {
+                    $container.html('<div class="text-muted small">No hay categorías disponibles</div>');
+                    return;
+                }
 
-            const html = ['<div class="list-group">'];
-            resp.data.forEach(function (c) {
-                const id = c.categoria;
-                const label = c.categoria;
-                html.push(`
-                    <label class="list-group-item d-flex align-items-center">
-                        <input type="checkbox" class="form-check-input me-2 exiros-cat" value="${id}"> ${label}
-                    </label>
+                const html = ['<div class="list-group">'];
+                resp.data.forEach(function (c) {
+                    const id = c.categoria;
+                    const label = c.categoria;
+                    html.push(`
+                        <label class="list-group-item d-flex align-items-center">
+                            <input type="checkbox" class="form-check-input me-2 exiros-cat" value="${id}"> ${label}
+                        </label>
+                    `);
+                });
+                html.push('</div>');
+                $container.html(html.join(''));
+            },
+            error: function (xhr, status, error) {
+                console.log('Error en fetchCategories:', xhr.responseText);
+                
+                // Determinar si es un error que puede beneficiarse de reintentos
+                const shouldRetry = (
+                    xhr.status === 500 || // Error interno del servidor
+                    xhr.status === 400 || // Bad Request (posibles problemas de transacción)
+                    xhr.status === 502 || // Bad Gateway
+                    xhr.status === 503 || // Service Unavailable
+                    xhr.status === 504 || // Gateway Timeout
+                    status === 'timeout' || // Timeout de la petición
+                    status === 'error' && !xhr.status // Error de red sin código específico
+                );
+                
+                if (shouldRetry && retryCount < 4) {
+                    console.log(`Reintentando carga de categorías (intento ${retryCount + 1}/5) - Error ${xhr.status || status}...`);
+                    setTimeout(function() {
+                        fetchCategories(retryCount + 1);
+                    }, 1000 * (retryCount + 1)); // Espera incremental: 1s, 2s, 3s, 4s
+                    return;
+                }
+                
+                // Error final - mostrar mensaje apropiado según el tipo de error
+                let errorMessage = 'Error al cargar categorías';
+                if (xhr.status === 400) {
+                    errorMessage = 'Error de procesamiento';
+                } else if (xhr.status >= 500) {
+                    errorMessage = 'Error del servidor';
+                } else if (status === 'timeout') {
+                    errorMessage = 'Tiempo agotado';
+                }
+                
+                $('#exiros-categories').html(`
+                    <div class="text-muted small">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        ${errorMessage} (${xhr.status || 'Red'})
+                        <br><button class="btn btn-xs btn-outline-secondary mt-1" onclick="fetchCategories()">
+                            <i class="fa fa-refresh"></i> Reintentar
+                        </button>
+                    </div>
                 `);
-            });
-            html.push('</div>');
-            $container.html(html.join(''));
-        })
-        .fail(function () {
-            $('#exiros-categories').html('<div class="text-muted small">Error al cargar categorías</div>');
+            }
         });
+    }
+    
+    // Iniciar carga de categorías
+    fetchCategories();
 
     // When category checkboxes change, allow only one selection and reload products
     $(document).on('change', '.exiros-cat', function () {
@@ -249,8 +348,8 @@ $(document).on("click", ".product-card", function () {
     if (articulo) {
     const sid = getPunchoutSID();
     const qs = sid ? `&SessionID=${encodeURIComponent(sid)}` : '';
-    // window.location.href = `/b2c/product?articulo=${encodeURIComponent(articulo)}${qs}`;
-    window.location.href = `/product?articulo=${encodeURIComponent(articulo)}${qs}`;
+    window.location.href = `/B2B-EXIROS-FRONT/product?articulo=${encodeURIComponent(articulo)}${qs}`;
+    // window.location.href = `/product?articulo=${encodeURIComponent(articulo)}${qs}`;
     }
 });
 
@@ -341,7 +440,7 @@ $(document).on('click', '.addCar', function (e) {
                 dataType: 'json'
             }).done(function (resp) {
                 console.log('insert-carrito:', resp);
-                if (!resp || resp.isError) {
+                if (!resp || resp.error) {
                     alert(resp.message || 'Error al agregar el artículo');
                     // restore
                     $btn.removeClass('disabled').removeAttr('aria-disabled').attr('class', originalClasses).html(originalHtml);
@@ -390,7 +489,7 @@ $(document).on('click', '.addCar', function (e) {
                 contentType: 'application/json',
                 dataType: 'json'
             }).done(function (resp) {
-                if (!resp || resp.isError) {
+                if (!resp || resp.error) {
                     alert(resp.message || 'Error al agregar el artículo');
                     $btn.attr('class', originalClasses).html(originalHtml);
                     return;

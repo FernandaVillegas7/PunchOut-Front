@@ -7,7 +7,7 @@ function formatMoney(v) {
 }
 
 function renderCarrito(items) {
-    let $tbody = $('#extras');
+    const $tbody = $('#extras');
     let rows = '';
     let grandTotal = 0;
 
@@ -21,8 +21,8 @@ function renderCarrito(items) {
         grandTotal += total;
 
         // Build dynamic image URL: clave = supplierPartID, img = codigo (fallbacks)
-        let claveImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || '';
-        let dynImg = (claveImg && codigo)
+        const claveImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || '';
+        const dynImg = (claveImg && codigo)
             ? `https://mersolsureste.com.mx/articulos/index.php?clave=${encodeURIComponent(claveImg)}&img=${encodeURIComponent(codigo)}`
             : (item.imagen || '');
 
@@ -62,9 +62,17 @@ function loadCarrito() {
         .done(function (sessionRes) {
             let hook = (sessionRes && !sessionRes.isError && sessionRes.data && sessionRes.data.hook) ? sessionRes.data.hook : null;
 
+            // Almacenar HOOK_URL globalmente si está disponible
+            if (hook && hook.browserFormPostUrl) {
+                window.HOOK_URL = hook.browserFormPostUrl;
+                window.BrowserFormPostUrl = hook.browserFormPostUrl; // Mantener compatibilidad
+            }
+
             // Then fetch carrito items
             $.getJSON(`app/api/exiros.php?method=get-carrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`)
                 .done(function (res) {
+                    console.log('Respuesta completa del carrito:', res);
+                    
                     if (!res || res.isError) {
                         console.warn('Error al obtener carrito', res);
                         renderCarrito([]);
@@ -72,6 +80,14 @@ function loadCarrito() {
                     }
 
                     console.log('Carrito (session):', res.data);
+                    console.log('Número de items en carrito:', (res.data || []).length);
+
+                    // Si no hay items, mostrar carrito vacío
+                    if (!res.data || res.data.length === 0) {
+                        console.log('Carrito vacío, renderizando tabla vacía');
+                        renderCarrito([]);
+                        return;
+                    }
 
                     // Construir y exponer JSON exportable del carrito
                     try {
@@ -511,7 +527,7 @@ $('#btnCXML').on('click', function (e) {
     let orderData = {
         hook: window.exportedCarrito?.hook || {
             buyerCookie: null,
-            browserFormPostUrl: "https://punchoutcommerce.com/tools/oci-roundtrip-return",
+            browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl,
             extrinsics: []
         },
         items: window.exportedCarrito?.items || []
@@ -567,29 +583,29 @@ $('#btnCXML').on('click', function (e) {
     });
 });
 
-function GenerarOCI(orderData, nuevoCarritoID) {
-    let form = document.createElement("form")
+function GenerarOCI(orderData) {
+    const form = document.createElement("form")
     form.method = "POST"
     // Ensure standard URL-encoded POST for OCI
     form.enctype = "application/x-www-form-urlencoded"
     form.acceptCharset = "UTF-8"
 
-    let hookUrl =
+    const hookUrl =
         (typeof orderData.hook === 'string' && orderData.hook) ||
         (orderData.hook && typeof orderData.hook.browserFormPostUrl === 'string' && orderData.hook.browserFormPostUrl) ||
         "";
     form.action = hookUrl
 
-    let addHidden = (name, value) => {
-        let input = document.createElement("input")
+    const addHidden = (name, value) => {
+        const input = document.createElement("input")
         input.type = "hidden"
         input.name = name
         input.value = value != null ? String(value) : ""
         form.appendChild(input)
     }
 
-    let addLongText = (name, text) => {
-        let ta = document.createElement("textarea")
+    const addLongText = (name, text) => {
+        const ta = document.createElement("textarea")
         ta.name = name
         ta.style.display = "none"
         ta.cols = 20
@@ -598,27 +614,27 @@ function GenerarOCI(orderData, nuevoCarritoID) {
     }
 
     (orderData.items || []).forEach((wrapper, idx) => {
-        let n = idx + 1
-        let item = (wrapper && wrapper.item) || {}
+        const n = idx + 1
+        const item = (wrapper && wrapper.item) || {}
 
         // OCI expects unit price in NEW_ITEM-PRICE; not total
-        let price = Number(item.unitPrice ?? item.itemPrice ?? 0)
-        let qty = Number(item.quantity ?? 0)
-        let matgrp = (item.category || "").trim().substring(0, 10)
-        let safeTrim = (v) => (v != null ? String(v).trim() : "")
-        let shortnm = safeTrim(item.shortname || "")
-        let longnm = safeTrim(item.longname || "")
+        const price = Number(item.unitPrice ?? item.itemPrice ?? 0)
+        const qty = Number(item.quantity ?? 0)
+        const matgrp = (item.category || "").trim().substring(0, 10)
+        const safeTrim = (v) => (v != null ? String(v).trim() : "")
+        const shortnm = safeTrim(item.shortname || "")
+        const longnm = safeTrim(item.longname || "")
 
         // Build OCI attachment URL: clave from supplierPartID, img from codigoArticulo (with fallbacks)
-        let _claveForImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || "";
-        let _codigoForImg = item.codigoArticulo || item.codigoInterno || item.supplierPartAuxiliaryID || item.supplierPartID || "";
+        const _claveForImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || "";
+        const _codigoForImg = item.codigoArticulo || item.codigoInterno || item.supplierPartAuxiliaryID || item.supplierPartID || "";
         let _dynImgUrl = (_claveForImg && _codigoForImg)
             ? `https://mersolsureste.com.mx/articulos/index.php?img=${encodeURIComponent(_codigoForImg)}`
             : (item.imagen || "");
         // Normalize any accidental breaks/spaces for tester RAW view
         _dynImgUrl = _dynImgUrl.replace(/[\r\n]+/g, '&').replace(/\s*&\s*/g, '&').replace('?&', '?').replace(/&&+/g, '&').trim();
         
-        addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartID)
+        addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartAuxiliaryID)
         addHidden(`NEW_ITEM-MATGROUP[${n}]`, matgrp)
         addHidden(`NEW_ITEM-DESCRIPTION[${n}]`, shortnm)
         addHidden(`NEW_ITEM-LANGUAGE[${n}]`, "ES")
@@ -631,13 +647,12 @@ function GenerarOCI(orderData, nuevoCarritoID) {
         addHidden(`NEW_ITEM-VENDOR[${n}]`, "108752")
         // Manufacturer and custom fields
         addHidden(`NEW_ITEM-MANUFACTCODE[${n}]`, item.manufacturer || '')
-        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.codigoArticulo || '')
-    // limitando a 10, y quitando el problema con la coma
-        let _rawC1 = (item.supplierPartAuxiliaryID || item.codigoArticulo || '');
-        let _sanC1 = _rawC1.replace(/[^A-Za-z0-9]/g, '');
-        let _clampC1 = _sanC1.substring(0, 10);
+        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.manufacturerModelNumber || '')
+        // CUST_FIELD1: max length 10 -> remove non-alphanumerics then clamp to 10
+        const _rawC1 = (item.supplierPartAuxiliaryID || item.codigoArticulo || '');
+        const _sanC1 = _rawC1.replace(/[^A-Za-z0-9]/g, '');
+        const _clampC1 = _sanC1.substring(0, 10);
         addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, _clampC1)
-        addHidden(`NEW_ITEM-CUST_FIELD2[${n}]`, String(nuevoCarritoID))
         addHidden(`NEW_ITEM-URL[${n}]`, window.location.href)
         // LONGTEXT (bracketless as requested), keep hidden input for tester visibility
         addLongText(`NEW_ITEM-LONGTEXT_${n}:132[]`, longnm)
