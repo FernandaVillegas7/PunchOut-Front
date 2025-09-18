@@ -262,81 +262,102 @@ function listItems() {
   $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
 }
 
-
-$('#btnSolicitar').on('click', function(e){
+$('#btnSolicitar').on('click', function (e) {
     e.preventDefault();
 
-    // Construir y mostrar JSON similar a DetallesCarrito.js
     try {
-        const hook = (window.exportedCarrito && window.exportedCarrito.hook) || null;
-        const items = (itemsCotizacion || []).map(it => ({
-            item: {
-                shortname: it.shortName || '',
-                longname: it.longName || '',
-                unitOfMeasure: it.unitOfMeasure || '',
-                itemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
-                priceUnit: 1,
-                unitPrice: Number(Number(it.amount || 0).toFixed(2)),
-                quantity: Number(it.cantidad || 1),
-                currency: it.currency || 'MXN',
-                category: it.category || '',
-                supplierPartID: it.supplierPartID || '',
-                // extra fields used by OCI
-                supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
-                manufacturer: it.manufacturer || '',
-                manufacturerModelNumber: it.manufacturerModelNumber || '',
-                codigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || ''
-            }
-        }));
+        const clienteID = "mersolsureste"; // ⚡ cliente fijo de prueba
 
-        const previewPayload = { hook, items };
-        const $wrap = $('#jsonPreviewContainer');
-        const $pre = $('#jsonPreview');
-        if ($wrap.length && $pre.length) {
-            $pre.text(JSON.stringify(previewPayload, null, 2));
-            $wrap.show();
-        }
-        window.quickCartPreview = previewPayload;
-      
+        const payload = {
+            HookUrl: "https://punchoutcommerce.com/tools/oci-roundtrip-return",
+            Username: "usuarioDemo",
+            Password: "demo123",
+            SessionID: "SESSION-123",
+            BuyerCookie: "",
+            BrowserFormPostUrl: "https://b2b.com/compra",
+            Extrinsics: "",
+            cXMLResponse: "",
+            StatusResponse: "",
+            FolioCotizacion: "SinCotizacion",
+
+            Items: itemsCotizacion.map((it, idx) => ({
+                Partida: idx + 1,
+                CodigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || "",
+                Quantity: Number(it.cantidad || 1),
+                UnitPrice: Number(it.amount || 0),
+                ItemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
+                UnitOfMeasure: it.unitOfMeasure || "PZA",
+                Currency: it.currency || "MXN",
+                Category: it.category || "DEFAULT",
+                Shortname: it.shortName || (it.descripcion ? it.descripcion.substring(0, 40) : "SIN NOMBRE"),
+                Longname: it.longName || it.descripcion || "SIN DESCRIPCION",
+                Manufacturer: it.manufacturer || "GENERICA",
+                ManufacturerModelNumber: it.manufacturerModelNumber || "N/A",
+                SupplierPartID: it.supplierPartID || "N/A",
+                SupplierPartAuxiliaryID: it.supplierPartAuxiliaryID || it.codigoInterno || ""
+            }))
+        };
+
+        $.ajax({
+            type: "POST",
+            url: `app/api/compraRapida.php?method=compra-rapida`,
+            dataType: "json",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            success: function (response) {
+                const alertsContainer = document.getElementById("alertsContainer");
+                alertsContainer.innerHTML = "";
+
+                const alertDiv = document.createElement("div");
+                alertDiv.className = `alert ${response.isError ? "alert-danger" : "alert-success"} alert-dismissible fade show mt-3`;
+                alertDiv.role = "alert";
+                alertDiv.innerHTML = `
+                    <strong>${response.isError ? "Error" : "Éxito"}:</strong> 
+                    ${response.message || (response.isError ? "Ocurrió un error al procesar la compra." : "Compra procesada correctamente.")}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+
+                alertsContainer.appendChild(alertDiv);
+
+                if (!response.isError) {
+                    itemsCotizacion = [];
+                    listItems();
+                }
+            },
+            error: function (xhr) {
+                console.error("❌ Error AJAX:", xhr.responseText);
+
+                const alertsContainer = document.getElementById("alertsContainer");
+                alertsContainer.innerHTML = "";
+
+                const alertDiv = document.createElement("div");
+                alertDiv.className = "alert alert-danger alert-dismissible fade show mt-3";
+                alertDiv.role = "alert";
+                alertDiv.innerHTML = `
+                    <strong>Error:</strong> Error al enviar carrito al backend.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                alertsContainer.appendChild(alertDiv);
+            }
+        });
     } catch (err) {
-        console.warn('No se pudo generar la vista previa JSON:', err);
+        const alertsContainer = document.getElementById("alertsContainer");
+        alertsContainer.innerHTML = "";
+
+        const alertDiv = document.createElement("div");
+        alertDiv.className = "alert alert-danger alert-dismissible fade show mt-3";
+        alertDiv.role = "alert";
+        alertDiv.innerHTML = `
+            <strong>Error:</strong> Error al generar el carrito.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        alertsContainer.appendChild(alertDiv);
     }
-
-    // Preparamos el array con el número de partida
-    const itemsConPartida = itemsCotizacion.map((item, idx) => ({
-        partida: idx + 1,
-        articulo: item.articulo,
-        cantidad: item.cantidad
-        // Si necesitas más campos, agrégalos aquí
-    }));
-
-    if (itemsConPartida.length === 0) {
-        alert('No hay productos para procesar.');
-        return;
-    }
-
-    $.ajax({
-        type: "POST",
-        url: `app/api/compraRapida.php?method=compra-rapida`,
-        dataType: "json",
-        data: JSON.stringify(itemsConPartida),
-        contentType: "application/json",
-        success: function(response) {
-            
-            if (response.isError) {
-                alert(response.message || "Ocurrió un error al procesar la compra.");
-            } else {
-                alert(response.message || "Cotización creada correctamente.");
-                // Limpiar la lista y actualizar la tabla
-                itemsCotizacion = [];
-                listItems();
-            }
-        },
-        error: function(xhr) {
-            alert("Error al cargar el producto.");
-        }
-    });
 });
+
+
+
+
 
 // Elimina artículo de la lista
 // Delegación de evento para editar cantidad
