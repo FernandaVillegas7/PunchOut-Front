@@ -229,6 +229,157 @@ class ExirosController extends BaseController
         ];
     }
 
+    public function SaveCarrito(array $data)
+    {
+        session_start();
+        // TODO: HABILITAR SESION AQUI - Validar que exista SessionID de PunchOut
+        // $sessionID = $_SESSION['SessionID'] ?? null;
+        // if (empty($sessionID)) {
+        //     $this->setResponse(true, HTTP_UNAUTHORIZED, 'SessionID de PunchOut no válido o no encontrado')->showResponse();
+        // }
+ 
+        // 1) Resolver hook/credenciales y sesión
+        $sessionId = $data['SessionID'] ?? ($_SESSION['SessionID'] ?? session_id());
+        $hookFromPayload = $data['hook'] ?? $data['Hook'] ?? null; // admit both cases
+        $buyerCookie = $data['BuyerCookie']
+            ?? ($hookFromPayload['buyerCookie'] ?? null)
+            ?? ($_SESSION['BuyerCookie'] ?? null);
+        $browserFormPostUrl = $data['BrowserFormPostUrl']
+            ?? ($hookFromPayload['browserFormPostUrl'] ?? null)
+            ?? ($_SESSION['BrowserFormPostUrl'] ?? null);
+        $hookUrl = $data['HookUrl'] ?? $browserFormPostUrl; // default to BrowserFormPostUrl if HookUrl absent
+ 
+        // Extrinsics: allow string or array/object
+        $extrinsicsValue = $data['Extrinsics']
+            ?? ($hookFromPayload['extrinsics'] ?? ($_SESSION['Extrinsics'] ?? []));
+        if (is_array($extrinsicsValue) || is_object($extrinsicsValue)) {
+            $extrinsicsStr = json_encode($extrinsicsValue, JSON_UNESCAPED_UNICODE);
+        } else {
+            // assume already JSON/string
+            $extrinsicsStr = (string)$extrinsicsValue;
+        }
+ 
+        // Opcionales de estado/cXML
+        $cxmlResponse = $data['cXMLResponse'] ?? '';
+        $statusResponse = $data['StatusResponse'] ?? 'OK';
+ 
+        // Credenciales: tomar de payload o de config [OCI]
+        try {
+            $vendorDir = dirname(__DIR__);
+            $baseDir = dirname($vendorDir);
+            $iniData = parse_ini_file($baseDir . DIRECTORY_SEPARATOR . 'app/config/routes.ini', true, INI_SCANNER_TYPED);
+            $cfgUser = $iniData['OCI']['username'] ?? null;
+            $cfgPass = $iniData['OCI']['password'] ?? null;
+        } catch (\Throwable $e) {
+            $cfgUser = null;
+            $cfgPass = null;
+        }
+        $username = $data['Username'] ?? $data['USER'] ?? $cfgUser ?? '';
+        $password = $data['Password'] ?? $data['PASSWORD'] ?? $cfgPass ?? '';
+ 
+        // 2) Resolver items: admitir $data['Items'] (ya en formato final) o mapear desde $data['items'] exportado por JS
+        $itemsOut = [];
+        if (!empty($data['Items']) && is_array($data['Items'])) {
+            // Vienen preformateados: normalizar Partida según el orden recibido
+            $idx = 0;
+            foreach ($data['Items'] as $it) {
+                $idx++;
+                // Mantener el item tal cual, pero forzar Partida por orden y defaults de IDs si faltan
+                if (!is_array($it)) { $it = (array)$it; }
+                $it['ItemsCarritosExirosID'] = isset($it['ItemsCarritosExirosID']) ? (int)$it['ItemsCarritosExirosID'] : 0;
+                $it['CarritoExiros'] = isset($it['CarritoExiros']) ? (int)$it['CarritoExiros'] : 0;
+                $it['Partida'] = $idx; // asegurar que Partida siga el orden recibido (1-based)
+                $itemsOut[] = $it;
+            }
+        } else {
+            // Mapear desde export de JS: puede venir como items: [{ item: { ... } }, ...] o directamente items: [{...}]
+            $jsItems = $data['items'] ?? [];
+            if (is_array($jsItems)) {
+                $n = 0;
+                foreach ($jsItems as $wrap) {
+                    $n++;
+                    $it = isset($wrap['item']) && is_array($wrap['item']) ? $wrap['item'] : (is_array($wrap) ? $wrap : []);
+                    $itemsOut[] = [
+                        'ItemsCarritosExirosID'   => 0,
+                        'Partida'                 => $n,
+                        'CarritoExiros'           => 0,
+                        'Shortname'               => (string)($it['shortname'] ?? ''),
+                        'Longname'                => (string)($it['longname'] ?? ''),
+                        'UnitOfMeasure'           => (string)($it['unitOfMeasure'] ?? ''),
+                        'ItemPrice'               => (float)($it['itemPrice'] ?? $it['UnitPrice'] ?? 0),
+                        'PriceUnit'               => (int)($it['priceUnit'] ?? 1),
+                        'UnitPrice'               => (float)($it['unitPrice'] ?? $it['ItemPrice'] ?? 0),
+                        'Quantity'                => (int)($it['quantity'] ?? 0),
+                        'Currency'                => (string)($it['currency'] ?? 'MXN'),
+                        'Category'                => (string)($it['category'] ?? ''),
+                        'SupplierPartID'          => (string)($it['supplierPartID'] ?? ''),
+                        'SupplierPartAuxiliaryID' => (string)($it['supplierPartAuxiliaryID'] ?? ''),
+                        'Manufacturer'            => (string)($it['manufacturer'] ?? ''),
+                        'ManufacturerModelNumber' => (string)($it['manufacturerModelNumber'] ?? ''),
+                        'CodigoArticulo'          => (string)($it['codigoArticulo'] ?? $it['codigoInterno'] ?? '')
+                    ];
+                }
+            }
+        }
+ 
+        // 3) Construir payload final para API remota
+        $payload = [
+            'HookUrl'            => (string)($hookUrl ?? ''),
+            'Username'           => (string)$username,
+            'Password'           => (string)$password,
+            'BuyerCookie'        => (string)($buyerCookie ?? ''),
+            'SessionID'          => (string)($sessionId ?? ''),
+            'BrowserFormPostUrl' => (string)($browserFormPostUrl ?? ''),
+            'Extrinsics'         => (string)$extrinsicsStr,
+            'cXMLResponse'       => (string)$cxmlResponse,
+            'StatusResponse'     => (string)$statusResponse,
+            'Items'              => $itemsOut,
+        ];
+ 
+        // 4) Enviar a endpoint remoto
+        $routes = $this->getApiRutes();
+        $apiKey = $this->getXApiKey();
+        try {
+            $response = callApi('exiros-guardar-compra', $payload, [
+                'routes' => $routes,
+                'apiKey' => $apiKey,
+                'method' => 'POST'
+            ]);
+        } catch (\Exception $e) {
+            // Error de transporte o helper
+            return [
+                'isError' => true,
+                'message' => $e->getMessage(),
+                'data' => null
+            ];
+        }
+ 
+        $decoded = json_decode($response, true);
+        if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+            // Respuesta no JSON; regresa raw
+            return [
+                'isError' => false,
+                'message' => 'Respuesta no-JSON recibida',
+                'data'    => $response
+            ];
+        }
+ 
+        // Normaliza esquema de respuesta
+        if (isset($decoded['isError']) && $decoded['isError']) {
+            return [
+                'isError' => true,
+                'message' => $decoded['message'] ?? 'Error al guardar compra Exiros',
+                'data'    => $decoded['data'] ?? null
+            ];
+        }
+ 
+        return [
+            'isError' => false,
+            'message' => $decoded['message'] ?? 'Compra guardada correctamente',
+            'data'    => $decoded['data'] ?? $decoded
+        ];
+    }
+    
     public function ExirosProductDetail($data)
     {
         session_start();

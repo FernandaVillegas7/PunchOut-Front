@@ -189,7 +189,28 @@ function GenerarOCI_Quick(orderData) {
     return form;
 }
 
-// 3. Array de cotización
+async function obtenerDatosSesionPunchOut() {
+  const sessionID = sessionStorage.getItem('punchoutSessionID');
+  if (!sessionID) return null;
+
+  try {
+    const res = await fetch(`app/api/exiros.php?method=getPunchoutSession`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ SessionID: sessionID })
+    });
+
+    if (!res.ok) throw new Error('Error al obtener sesión PunchOut');
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error al recuperar sesión:', err);
+    return null;
+  }
+}
+
+
+//. Array de cotización
 let itemsCotizacion = [];
 
 
@@ -209,6 +230,26 @@ $('#btnAgregar').on('click', function (e) {
   $('#cantidad').val('1');
   listItems();
 });
+
+async function obtenerDatosSesionPunchOut() {
+  const sessionID = sessionStorage.getItem('punchoutSessionID');
+  if (!sessionID) return null;
+
+  try {
+    const res = await fetch(`app/api/exiros.php?method=getPunchoutSession`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ SessionID: sessionID })
+    });
+
+    if (!res.ok) throw new Error('Error al obtener sesión PunchOut');
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error al recuperar sesión:', err);
+    return null;
+  }
+}
 
 
 function listItems() {
@@ -262,20 +303,22 @@ function listItems() {
   $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
 }
 
-$('#btnSolicitar').on('click', function (e) {
+$('#btnSolicitar').on('click', async function (e) {
     e.preventDefault();
 
     try {
-        const clienteID = "mersolsureste"; // ⚡ cliente fijo de prueba
-
+        const clienteID = "mersolsureste"; 
+        const hookData = await obtenerDatosSesionPunchOut();
+        const hook = hookData?.hook || {};
+        
         const payload = {
-            HookUrl: "https://punchoutcommerce.com/tools/oci-roundtrip-return",
-            Username: "usuarioDemo",
+            HookUrl: hook.browserFormPostUrl || "-", 
+            Username: hookData?.sessionID || "-",
             Password: "demo123",
             SessionID: "SESSION-123",
-            BuyerCookie: "",
-            BrowserFormPostUrl: "https://b2b.com/compra",
-            Extrinsics: "",
+            BuyerCookie: hook?.buyerCookie || "-",
+            browserFormPostUrl: hook.browserFormPostUrl || "-",
+            Extrinsics: hook?.extrinsics || "[]",
             cXMLResponse: "",
             StatusResponse: "",
             FolioCotizacion: "SinCotizacion",
@@ -325,7 +368,7 @@ $('#btnSolicitar').on('click', function (e) {
                 }
             },
             error: function (xhr) {
-                console.error("❌ Error AJAX:", xhr.responseText);
+                console.error(" Error AJAX:", xhr.responseText);
 
                 const alertsContainer = document.getElementById("alertsContainer");
                 alertsContainer.innerHTML = "";

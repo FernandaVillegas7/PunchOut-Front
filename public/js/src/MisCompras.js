@@ -57,7 +57,7 @@ let currentClienteID = "";
   }
 
   const estadoBadgeMap = {
-    "Creado": "bg-secondary",
+    "Nuevo": "bg-warning text-dark",
     "Comprado": "bg-primary",
     "Enviado": "bg-info",
     "Cancelado": "bg-danger",
