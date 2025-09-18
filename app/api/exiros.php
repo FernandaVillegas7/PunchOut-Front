@@ -7,17 +7,16 @@ use const app\controllers\HTTP_BAD_REQUEST;
 
 // If a SessionID is provided in the query, resume that PHP session.
 // This helps when the browser blocks third-party cookies during PunchOut.
-// NOTE: Disabled for development to avoid interference
-// if (isset($_GET['SessionID']) && is_string($_GET['SessionID']) && $_GET['SessionID'] !== '') {
-//     if (session_status() === PHP_SESSION_ACTIVE) {
-//         session_write_close();
-//     }
-//     @session_id($_GET['SessionID']);
-//     @session_start();
-//     if (empty($_SESSION['SessionID'])) {
-//         $_SESSION['SessionID'] = session_id();
-//     }
-// }
+if (isset($_GET['SessionID']) && is_string($_GET['SessionID']) && $_GET['SessionID'] !== '') {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+    @session_id($_GET['SessionID']);
+    @session_start();
+    if (empty($_SESSION['SessionID'])) {
+        $_SESSION['SessionID'] = session_id();
+    }
+}
 
 $controller = new ExirosController();
 
@@ -41,7 +40,7 @@ try {
                 $timestamp = date('c'); // ISO 8601
                 $sessionId = $result['data']['SessionID'];
                 $protocol = $result['protocol'] ?? 'cXML';
-                $startUrl = "https://b2b.mersolsureste.com.mx/shop?SessionID={$sessionId}";
+                $startUrl = "https://localhost/B2B-EXIROS-FRONT/shop?SessionID={$sessionId}";
 
                 if (strcasecmp($protocol, 'OCI') === 0) {
                     // For OCI logins, redirect the browser into the shop with SessionID
@@ -196,22 +195,28 @@ try {
             }
             break;
 
-        // case 'export-carrito':
-        //     // Exporta el carrito de la sesión a JSON en servidor y lo devuelve
-        //     $result = $controller->ExportCarrito();
-        //     header('Content-Type: application/json; charset=UTF-8');
-        //     echo json_encode($result);
-        //     exit;
-        
+        case 'SaveCarrito':
+            if ($requestMethod === 'POST') {
+                $input = file_get_contents('php://input');
+                $data = json_decode($input, true);
 
-        case 'ExirosGetCategorias':
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    http_response_code(400);
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode([
+                        'isError' => true,
+                        'message' => 'JSON inválido en el body: ' . json_last_error_msg()
+                    ]);
+                    exit;
+                }
 
-            // Controller method does not expect external $data; call without arguments
-            $categorias = $controller->ExirosGetCategorias();
+                $result = $controller->SaveCarrito($data ?? []);
 
-            header('Content-Type: application/json; charset=UTF-8');
-            echo json_encode($categorias);
-            exit;
+                // The controller already normalizes the response and carries data (NuevoCarritoID)
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode($result);
+                exit;
+            }
             break;
 
 

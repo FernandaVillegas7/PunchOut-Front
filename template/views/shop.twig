@@ -16,7 +16,8 @@
 
 	<div class="container-fluid">
 		<div class="row px-xl-5">
-			<div class="col-lg-3 col-md-4">
+			<div
+				class="col-lg-3 col-md-4">
 
 				{# Search arriba de los filtros #}
 				<div class="mb-4">
@@ -36,7 +37,8 @@
 					</span>
 				</h5>
 
-				<div id="exiros-categories" class="mb-4">
+				<div
+					id="exiros-categories" class="mb-4">
 					<!-- Categorías cargadas dinámicamente -->
 					<div class="text-muted small">Cargando categorías...</div>
 				</div>
@@ -60,47 +62,54 @@
 {% endblock %}
 
 {% block extraScripts %}
-    {# {{ parent() }}
-    <script src="{{'public/js/src/b2bProducts.js'|filemtime_version}}"></script> #}
+	{# {{ parent() }}
+	    <script src="{{'public/js/src/b2bProducts.js'|filemtime_version}}"></script> #}
 	{{ parent() }}
 	<script>
-	// // TODO: HABILITAR SESION AQUI
-    // // Validación global de sesión para PunchOut/OCI en Compra Rápida
-    // (function () {
-    //     var ERROR_URL = 'https://b2b.mersolsureste.com.mx/errors/401';
-    //     try {
-    //         var params = new URLSearchParams(window.location.search);
-    //         var fromUrl = params.get('SessionID');
-    //         var sid = fromUrl || (sessionStorage.getItem('punchoutSessionID') || '');
+		// Validación global de sesión para PunchOut/OCI en Compra Rápida
+(function () {
+var ERROR_URL = 'https://exiros.mersolsureste.com.mx/errors/401';
+try {
+var params = new URLSearchParams(window.location.search);
+var fromUrl = params.get('SessionID');
+var sid = fromUrl || (sessionStorage.getItem('punchoutSessionID') || '');
 
-    //         if (!sid) {
-    //             window.location.replace(ERROR_URL);
-    //             return;
-    //         }
+if (! sid) {
+window.location.replace(ERROR_URL);
+return;
+}
 
-    //         // Persistir el SessionID para siguientes requests
-    //         try { sessionStorage.setItem('punchoutSessionID', sid); } catch (e) {}
+// Persistir el SessionID para siguientes requests
+try {
+sessionStorage.setItem('punchoutSessionID', sid);
+} catch (e) {}
 
-    //         // Validar en servidor y anclar cookie de sesión PHP para las llamadas AJAX posteriores
-    //         fetch('app/api/exiros.php?method=validateSessionID', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ SessionID: sid })
-    //         }).then(function (res) {
-    //             if (!res.ok) throw new Error('HTTP ' + res.status);
-    //             return res.json();
-    //         }).then(function (json) {
-    //             if (!json || json.error) {
-    //                 window.location.replace(ERROR_URL);
-    //             }
-    //         }).catch(function () {
-    //             window.location.replace(ERROR_URL);
-    //         });
-    //     } catch (e) {
-    //         window.location.replace(ERROR_URL);
-    //     }
-    // })();
-    // Nota: CompraRapida.js debe leer sessionStorage('punchoutSessionID') si necesita adjuntar el parámetro en URLs
-</script>
-    <script src="{{'public/js/src/b2bProducts.js'|filemtime_version}}"></script>
+// Validar en servidor y anclar cookie de sesión PHP para las llamadas AJAX posteriores
+fetch('app/api/exiros.php?method=validateSessionID', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{SessionID: sid}
+)
+}).then(function (res) {
+if (! res.ok) 
+throw new Error('HTTP ' + res.status);
+
+return res.json();
+}).then(function (json) {
+if (! json || json.error) {
+window.location.replace(ERROR_URL);
+}
+}).catch(function () {
+window.location.replace(ERROR_URL);
+});
+} catch (e) {
+window.location.replace(ERROR_URL);
+}
+})();
+// Nota: CompraRapida.js debe leer sessionStorage('punchoutSessionID') si necesita adjuntar el parámetro en URLs
+	</script>
+	<script src="{{'public/js/src/b2bProducts.js'|filemtime_version}}"></script>
 {% endblock %}

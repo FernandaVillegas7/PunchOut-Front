@@ -20,7 +20,7 @@ items.AddCar.on('click', function (e) {
     const sid = (function(){ try { return sessionStorage.getItem('punchoutSessionID'); } catch(_) { return new URLSearchParams(location.search).get('SessionID'); } })();
     $.ajax({
         type: 'POST',
-        url: `/b2c/app/api/exiros.php?method=insert-carrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`,
+        url: `/B2B-EXIROS-FRONT/app/api/exiros.php?method=insert-carrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`,
         contentType: 'application/json',
         dataType: 'json',
         success: function (response) {
@@ -38,7 +38,7 @@ items.AddCar.on('click', function (e) {
 
                     $.ajax({
                         type: 'POST',
-                        url: '/b2c/app/api/carrito.php?method=insertItemCarrito',
+                        url: '/B2B-EXIROS-FRONT/app/api/carrito.php?method=insertItemCarrito',
                         contentType: 'application/json',
                         dataType: 'json',
                         data: JSON.stringify(payload),
