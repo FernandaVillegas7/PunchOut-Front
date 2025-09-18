@@ -85,7 +85,7 @@ $('#btnEnviarOCI').on('click', function (e) {
     // Construir orderData como en DetallesCarrito
     const hook = (window.exportedCarrito && window.exportedCarrito.hook) || {
         buyerCookie: null,
-        browserFormPostUrl: 'https://punchoutcommerce.com/tools/oci-roundtrip-return',
+        browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl,
         extrinsics: []
     };
     const items = itemsCotizacion.map(it => ({
@@ -269,12 +269,12 @@ $('#btnSolicitar').on('click', function (e) {
         const clienteID = "mersolsureste"; // ⚡ cliente fijo de prueba
 
         const payload = {
-            HookUrl: "https://punchoutcommerce.com/tools/oci-roundtrip-return",
+            HookUrl: window.HOOK_URL || window.BrowserFormPostUrl,
             Username: "usuarioDemo",
             Password: "demo123",
             SessionID: "SESSION-123",
             BuyerCookie: "",
-            BrowserFormPostUrl: "https://b2b.com/compra",
+            BrowserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl || "https://b2b.com/compra",
             Extrinsics: "",
             cXMLResponse: "",
             StatusResponse: "",

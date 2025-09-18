@@ -62,6 +62,12 @@ function loadCarrito() {
         .done(function (sessionRes) {
             let hook = (sessionRes && !sessionRes.isError && sessionRes.data && sessionRes.data.hook) ? sessionRes.data.hook : null;
 
+            // Almacenar HOOK_URL globalmente si está disponible
+            if (hook && hook.browserFormPostUrl) {
+                window.HOOK_URL = hook.browserFormPostUrl;
+                window.BrowserFormPostUrl = hook.browserFormPostUrl; // Mantener compatibilidad
+            }
+
             // Then fetch carrito items
             $.getJSON(`app/api/exiros.php?method=get-carrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`)
                 .done(function (res) {
@@ -511,7 +517,7 @@ $('#btnCXML').on('click', function (e) {
     let orderData = {
         hook: window.exportedCarrito?.hook || {
             buyerCookie: null,
-            browserFormPostUrl: "https://punchoutcommerce.com/tools/oci-roundtrip-return",
+            browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl,
             extrinsics: []
         },
         items: window.exportedCarrito?.items || []

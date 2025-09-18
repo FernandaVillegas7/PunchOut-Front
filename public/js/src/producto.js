@@ -60,6 +60,11 @@ $(document).ready(function () {
         if (resp && !resp.isError && resp.data) {
             window.phpSessionID = resp.data.sessionID || resp.data.cookieValue || null;
             console.log('PHP SessionID:', window.phpSessionID);
+            // Almacenar HOOK_URL globalmente si está disponible
+            if (resp.data.hook && resp.data.hook.browserFormPostUrl) {
+                window.HOOK_URL = resp.data.hook.browserFormPostUrl;
+                window.BrowserFormPostUrl = resp.data.hook.browserFormPostUrl; // Mantener compatibilidad
+            }
         } else {
             console.warn('No se pudo obtener session id', resp);
         }

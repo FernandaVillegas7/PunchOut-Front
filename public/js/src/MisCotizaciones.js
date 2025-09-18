@@ -47,7 +47,7 @@ let currentClienteID = "";
     const sess = window.PunchoutSession || {}
     return {
       ClienteID: cot.clienteID?.trim() || window.currentClienteID?.trim() || null,
-      HookUrl: window.BrowserFormPostUrl || sess.HookUrl|| "-",
+      HookUrl: window.HOOK_URL || window.BrowserFormPostUrl || sess.HookUrl|| "-",
       Username: window.Username ||  "-",
       Password: window.Password ||  "-",
       BuyerCookie : window.BuyerCookie ||sess.BuyerCookie||  "-",
@@ -405,8 +405,6 @@ function GenerarOCI(cot) {
   form.method = "POST";
   form.enctype = "application/x-www-form-urlencoded";
   form.acceptCharset = "UTF-8";
- 
-  // let hookUrl = "https://punchoutcommerce.com/tools/oci-roundtrip-return";
  
   let hookUrl = (cot.HookUrl && String(cot.HookUrl).trim());
   form.action = hookUrl;

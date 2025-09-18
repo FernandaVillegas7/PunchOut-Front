@@ -37,6 +37,11 @@ if (sessionId) {
         success: function (response) {
             if (response && !response.error) {
                 console.log(`Sesión validada: `, response);
+                // Almacenar HOOK_URL globalmente para uso en toda la aplicación
+                if (response.HOOK_URL) {
+                    window.HOOK_URL = response.HOOK_URL;
+                    window.BrowserFormPostUrl = response.HOOK_URL; // Mantener compatibilidad
+                }
                 // Aquí puedes mostrar datos del usuario si lo deseas
             } else {
                 console.log(`Sesión error: `, response.error);

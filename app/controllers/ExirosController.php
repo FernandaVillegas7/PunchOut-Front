@@ -32,22 +32,18 @@ class ExirosController extends BaseController
 {
     public function getLoginToken()
     {
-        // Start or resume PHP session; we'll generate/use the real PHP session id
-        // so the buyer can be redirected to a URL containing the PHP session id
-        // and we can resume the same session later.
         session_start();
-        // Detect cXML vs OCI request
+
         $contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
         $isForm = stripos($contentType, 'application/x-www-form-urlencoded') !== false
             || stripos($contentType, 'multipart/form-data') !== false
             || (!empty($_POST) && empty($_POST['cXML']));
 
         if ($isForm) {
-            // OCI-style login: expects form fields like HOOK_URL, USERNAME/USER, PASSWORD, etc.
             $hookUrl = $_POST['HOOK_URL'] ?? $_POST['hook_url'] ?? '';
             $username = $_POST['USERNAME'] ?? $_POST['USER'] ?? $_POST['username'] ?? '';
             $password = $_POST['PASSWORD'] ?? $_POST['password'] ?? '';
-            // Optional: buyer cookie / company / email fields used by some buyers
+
             $buyerCookie = $_POST['BUYER_COOKIE'] ?? $_POST['buyer_cookie'] ?? session_id();
 
             // Validate credentials against configuration (routes.ini [OCI])
@@ -173,8 +169,8 @@ class ExirosController extends BaseController
         $_SESSION['BuyerCookie'] = $buyerCookie;
         $_SESSION['BrowserFormPostUrl'] = $browserFormPostUrl;
         $_SESSION['Extrinsics'] = $extrinsics;
-        $_SESSION['Username'] = $username;
-        $_SESSION['Password'] = $password; 
+        // $_SESSION['Username'] = $username;
+        // $_SESSION['Password'] = $password; 
 
         // Respuesta (puedes ajustar formato según lo que espera el comprador)
         return [
@@ -217,6 +213,7 @@ class ExirosController extends BaseController
                 'message' => 'Sesión válida',
                 'objResponse' => [
                     'clienteUsuarioID' => $_SESSION['cliente'] ?? null,
+                    'HOOK_URL' => $_SESSION['BrowserFormPostUrl'] ?? null,
                     'extrinsics' => $_SESSION['Extrinsics'] ?? []
                 ]
             ];

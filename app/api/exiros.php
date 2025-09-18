@@ -79,25 +79,6 @@ try {
     HTML;
 
                 echo $html;
-                /*
-                // RESPALDO: Respuesta cXML original PunchOutSetupResponse
-                // Content-Type original: application/xml; charset=UTF-8
-                header('Content-Type: application/xml; charset=UTF-8');
-                echo <<<XML
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE cXML SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.040/cXML.dtd">
-    <cXML payloadID="{$sessionId}@b2b.mersolsureste.com.mx" timestamp="{$timestamp}">
-        <Response>
-            <Status code="200" text="OK"></Status>
-            <PunchOutSetupResponse>
-                <StartPage>
-                    <URL>{$escapedStartUrl}</URL>
-                </StartPage>
-            </PunchOutSetupResponse>
-        </Response>
-    </cXML>
-    XML;
-                */
                 exit;
             }
             break;
@@ -121,7 +102,8 @@ try {
                     'error' => $response->error,
                     'message' => $response->message,
                     'clienteUsuarioID' => $response->objResponse['clienteUsuarioID'] ?? null,
-                    'extrinsics' => $response->objResponse['extrinsics'] ?? null
+                    'extrinsics' => $response->objResponse['extrinsics'] ?? null,
+                    'HOOK_URL' => $response->objResponse['HOOK_URL'] ?? null
                 ]);
                 exit;
             }
