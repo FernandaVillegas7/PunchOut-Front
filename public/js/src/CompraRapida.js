@@ -312,7 +312,7 @@ $('#btnSolicitar').on('click', async function (e) {
         const hook = hookData?.hook || {};
         
         const payload = {
-            HookUrl: window.HOOK_URL || window.BrowserFormPostUrl,
+            HookUrl: window.HOOK_URL || window.BrowserFormPostUrl  || '',
             Username: "usuarioDemo",
             Password: "demo123",
             SessionID: "SESSION-123",
@@ -487,10 +487,6 @@ $('#itemList').on('click', '.drop', function () {
         <div class="text-end">
           <div class="fw-semibold">${money(total)}</div>
           <div class="mt-1">
-            <a class="btn btn-outline-danger btn-sm" 
-               href="misCompras?clienteID=${encodeURIComponent(c.clienteID||'')}">Ver
-              <i class="fa-regular fa-eye"></i>
-            </a>
           <a class="btn btn-dark btn-sm" 
             href="${repoBase}/cotizar?clienteID=${encodeURIComponent(currentClienteID)}&carritoId=${encodeURIComponent(c.carritoExirosID)}">
             Cargar <i class="fa-solid fa-rotate-right"></i>

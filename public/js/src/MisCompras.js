@@ -57,8 +57,8 @@ let currentClienteID = "";
   }
 
   const estadoBadgeMap = {
-    "Nuevo": "bg-warning text-dark",
-    "Comprado": "bg-primary",
+    "Comprado": "bg-warning text-dark",
+    "Finalizado": "bg-primary",
     "Enviado": "bg-info",
     "Cancelado": "bg-danger",
     "Eliminado": "bg-dark",
@@ -69,22 +69,22 @@ let currentClienteID = "";
   };
 
   //Fetch al cambio de estado 
-async function cambiarEstadoCarrito(apiUrl, carritoId, nuevoEstadoId) {
-  const url = `${apiUrl}?method=exiros-cambiar-estado`; 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      CarritoExirosID: parseInt(carritoId, 10),
-      NuevoEstadoCarrito: parseInt(nuevoEstadoId, 10)
-    })
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Error al cambiar estado :: ${txt}`);
+  async function cambiarEstadoCarrito(apiUrl, carritoId, nuevoEstadoId) {
+    const url = `${apiUrl}?method=exiros-cambiar-estado`; 
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        CarritoExirosID: parseInt(carritoId, 10),
+        NuevoEstadoCarrito: parseInt(nuevoEstadoId, 10)
+      })
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`Error al cambiar estado :: ${txt}`);
+    }
+    return res.json();
   }
-  return res.json();
-}
 
 
   //  Render del acordeón con compras
@@ -97,19 +97,14 @@ async function cambiarEstadoCarrito(apiUrl, carritoId, nuevoEstadoId) {
           const carritoId = compra.carritoExirosID || compra.carritoExirosId || compra.carritoExiros || `—${idx}`;
           const items = Array.isArray(compra.items) ? compra.items : (Array.isArray(compra.Items) ? compra.Items : []);
           const currency = (items[0] && items[0].currency) || 'MXN';
-
           const subtotal = items.reduce((s, it) => s + num(it.unitPrice ?? it.itemPrice) * num(it.quantity), 0);
           const total = subtotal; // impuestos/envío = 0
-
           const accId = `col-${carritoId}`;
           const hdrId = `hdr-${carritoId}`;
           const estadoNombre = compra.estado ? compra.estado.nombre : 'N/D';
           const badgeClass = estadoBadgeMap[estadoNombre] || 'bg-secondary';
-
           //FechaCracion
           const fechaCreacion = compra.fechaCreacion || compra.fecha || null;
-          
-
           const rows = items.map((it, idx2) => `
             <tr>
               <td>${idx2 + 1}</td>
@@ -138,6 +133,10 @@ async function cambiarEstadoCarrito(apiUrl, carritoId, nuevoEstadoId) {
                       <span class="fw-semibold">Carrito #${carritoId}</span>
                       ${compra.folioCotizacion ? `<span class="text-muted">Folio: ${compra.folioCotizacion}</span>` : ''}
                       ${compra.estado ? `<span class="text-muted">Estado: ${compra.estado.descripcion}</span>` : ''}
+                      ${compra.fechaCreacion ? `<span class="text-muted">Fecha cotización: ${new Date(compra.fechaCreacion).toLocaleString('es-MX', { 
+                        dateStyle: 'medium',
+                        timeStyle: 'short'
+                      })}</span>` : ''}
                     </div>
                     <div class="d-flex align-items-center gap-2">
                       <span class="badge ${badgeClass} badge-estado" data-carrito="${carritoId}" style="cursor:pointer">${estadoNombre}</span>
@@ -154,10 +153,13 @@ async function cambiarEstadoCarrito(apiUrl, carritoId, nuevoEstadoId) {
                       <div class="border rounded p-3 h-100">
                         <div class="fw-semibold mb-2">Resumen</div>
                         <div class="small">
+                          <div><strong>Folio:</strong>${compra.folioCotizacion}</div>
                           <div><strong>Carrito:</strong> ${carritoId}</div>
-                          ${compra.buyerCookie ? `<div><strong>Buyer Cookie:</strong> ${compra.buyerCookie}</div>` : ''}
-                          ${compra.sessionID ? `<div><strong>Session ID:</strong> ${compra.sessionID}</div>` : ''}
                           <div><strong>Moneda:</strong> ${currency}</div>
+                          <div><strong>Fecha:</strong>${new Date(compra.fechaCreacion).toLocaleString('es-MX', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                          })}</div>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between small"><span>Subtotal</span><span class="money">${fmtMoney(subtotal, currency)}</span></div>
@@ -286,7 +288,7 @@ const carritoIdParam = params.get("carritoId")
 if (carritoIdParam) {
   const accBtn = document.querySelector(`#hdr-${carritoIdParam} .accordion-button`)
   if (accBtn) {
-    accBtn.click() // 👈 despliega el acordeón del carrito
+    accBtn.click() //  despliega el acordeón del carrito
     accBtn.scrollIntoView({ behavior: "smooth", block: "center" })
   }
 }
