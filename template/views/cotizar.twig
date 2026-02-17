@@ -497,7 +497,7 @@
                     <button class="btn btn-dark w-100 mt-3" id="btnSolicitar" tooltip="Procesar pedido">
                         <i class="fa-solid fa-cash-register"></i> Procesar Pedido
                     </button>
-                    <button class="btn btn-outline-primary w-100 mt-2" id="btnEnviarOCI" tooltip="Enviar OCI al PunchOut">
+                    <button class="btn btn-outline-primary w-100 mt-2" id="btnEnviarOCI" tooltip="Enviar OCI al PunchOut" style="display:none;">
                         <i class="fa-solid fa-share-from-square"></i> Enviar OCI
                     </button>
                     <div id="jsonPreviewContainer" class="mt-3" style="display:none;">
@@ -573,6 +573,52 @@
 
 {% block extraScripts %}
 {{ parent() }}
+<script>
+// Validación global de sesión para PunchOut/OCI en Compra Rápida
+(function () {
+    var ERROR_URL = 'https://exiros.mersolsureste.com.mx/errors/401';
+    try {
+        var params = new URLSearchParams(window.location.search);
+        var fromUrl = params.get('SessionID');
+        var sid = fromUrl || (sessionStorage.getItem('punchoutSessionID') || '');
+
+        if (!sid) {
+            window.location.replace(ERROR_URL);
+            return;
+        }
+
+        // Persistir el SessionID para siguientes requests
+        try {
+            sessionStorage.setItem('punchoutSessionID', sid);
+        } catch (e) {}
+
+        // Validar en servidor y anclar cookie de sesión PHP para las llamadas AJAX posteriores
+        fetch('app/api/exiros.php?method=validateSessionID', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({SessionID: sid})
+        }).then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }).then(function (json) {
+            if (!json || json.error) {
+                window.location.replace(ERROR_URL);
+            } else {
+                // Establecer variables globales para PunchOut
+                window.HOOK_URL = json.HOOK_URL || '';
+                window.BrowserFormPostUrl = json.HOOK_URL || '';
+                console.log('Sesión PunchOut validada, HOOK_URL:', window.HOOK_URL);
+            }
+        }).catch(function () {
+            window.location.replace(ERROR_URL);
+        });
+    } catch (e) {
+        window.location.replace(ERROR_URL);
+    }
+})();
+</script>
 <script src="{{'public/js/src/CompraRapida.js'|filemtime_version}}"></script>
 <script src="{{'public/js/src/b2bProducts.js'|filemtime_version}}"></script>
 {% endblock %}

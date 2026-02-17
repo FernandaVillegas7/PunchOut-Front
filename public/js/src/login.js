@@ -123,7 +123,7 @@ $('#authForm').on('submit', function (e) {
                         backgroundColor: '#dc3545', // Rojo para error
                         color: '#fff'
                     });
-                    window.location.href = '/b2c/index.php'; // Cambia '/b2c/' según tu estructura de carpetas
+                    window.location.href = '/index.php'; // Cambia '/b2c/' según tu estructura de carpetas
                 } else {
                     // Mostrar éxito en el botón
                     submitButton.removeClass('loading').addClass('success').html(`

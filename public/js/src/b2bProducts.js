@@ -76,7 +76,10 @@ function renderProductItem(p) {
                                 ${p.longName} SKU:${p.supplierPartID}
                             </a>
                             <p class="text-muted small" style="font-weight: normal;">${p.longName}</p>
-                            <p class="small" style="font-size: 0.75rem; font-weight: bold;">${p.longName}</p>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <p class="small mb-0" style="font-size: 0.75rem; font-weight: bold;">${p.longName}</p>
+                                ${p.unitOfMeasure ? `<span class="badge bg-danger text-white small">Unidad: ${p.unitOfMeasure}</span>` : ''}
+                            </div>
                         </div>
                         <div class="d-flex align-items-center justify-content-between mt-auto pt-2 pt-md-3">
                             <h6 class="text-dark mb-0">$${p.amount} ${p.currency}</h6>
@@ -348,8 +351,8 @@ $(document).on("click", ".product-card", function () {
     if (articulo) {
     const sid = getPunchoutSID();
     const qs = sid ? `&SessionID=${encodeURIComponent(sid)}` : '';
-    window.location.href = `/B2B-EXIROS-FRONT/product?articulo=${encodeURIComponent(articulo)}${qs}`;
-    // window.location.href = `/product?articulo=${encodeURIComponent(articulo)}${qs}`;
+    // window.location.href = `/B2B-EXIROS-FRONT/product?articulo=${encodeURIComponent(articulo)}${qs}`;
+    window.location.href = `/product?articulo=${encodeURIComponent(articulo)}${qs}`;
     }
 });
 

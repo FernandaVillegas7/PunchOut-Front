@@ -1,6 +1,7 @@
 // Configuración global
 // const repoBase = '/AXEL-B2B-EXIROS-FRONT';
-const repoBase = '/B2B-EXIROS-FRONT'; 
+// const repoBase = '/B2B-EXIROS-FRONT'; 
+const repoBase = ''; 
 const apiMisCompras = `${repoBase}/app/api/misCompras.php`;
 
 let comprasCache = []; // aquí guardamos todas las compras que vienen del API

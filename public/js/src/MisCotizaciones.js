@@ -213,7 +213,8 @@ let currentClienteID = "";
   // ===================================
   async function cargarDesdeInput() {
     const root = byId('comprasRoot')
-    const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+    // const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+    const apiBase = root.getAttribute('data-api') || '/app/api/cotizacionCRM.php'
  
     const claveInput = byId('claveC')
     const clienteId = (claveInput?.value || '').trim()
@@ -313,9 +314,12 @@ if (!clienteFinal || clienteFinal === "-" || clienteFinal === "") {
 
 //  Redirección segura
 if (carritoId) {
-  const redirectUrl = clienteFinal
-    ? `/B2B-EXIROS-FRONT/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(carritoId)}`
-    : `/B2B-EXIROS-FRONT/misCompras?carritoId=${encodeURIComponent(carritoId)}`
+  // const redirectUrl = clienteFinal
+  //   ? `/B2B-EXIROS-FRONT/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(carritoId)}`
+  //   : `/B2B-EXIROS-FRONT/misCompras?carritoId=${encodeURIComponent(carritoId)}`
+    const redirectUrl = clienteFinal
+    ? `/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(carritoId)}`
+    : `/misCompras?carritoId=${encodeURIComponent(carritoId)}`
   // console.log("Redireccionando a:", redirectUrl)
   window.location.href = redirectUrl
 } else {
@@ -334,33 +338,34 @@ if (carritoId) {
   }
 }
 
-function initProcesarCompra() {
-  const root = byId('comprasRoot')
-  if (!root) return
+//function initProcesarCompra() {
+  //const root = byId('comprasRoot')
+  //if (!root) return
 
-  const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+  // const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+  //const apiBase = root.getAttribute('data-api') || '/app/api/cotizacionCRM.php'
 
-  root.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-procesar-compra')
-    if (!btn) return
+ // root.addEventListener('click', (e) => {
+   // const btn = e.target.closest('.btn-procesar-compra')
+   // if (!btn) return
 
-    const folio = btn.dataset.folio
-    const cot = cotIndex.get(folio)
-    if (!cot) {
-      alert('No se encontró la cotización.')
-      return
-    }
+  //  const folio = btn.dataset.folio
+//    const cot = cotIndex.get(folio)
+//    if (!cot) {
+//      alert('No se encontró la cotización.')
+//      return
+//    }
 
-    const payload = buildGuardarCompraPayload(cot)
+//    const payload = buildGuardarCompraPayload(cot)
     
 
     // ⚠️ cuidado: GenerarOCI(payload) hace submit y redirige
     // GenerarOCI(payload)
-    postCompra(apiBase, payload, btn)
-  })
-}
+//    postCompra(apiBase, payload, btn)
+//  })
+//}
 
-document.addEventListener('DOMContentLoaded', init)
+//document.addEventListener('DOMContentLoaded', init)
 
 
 
@@ -373,7 +378,8 @@ document.addEventListener('DOMContentLoaded', init)
     const root = byId('comprasRoot')
      if (!root) return
  
-    const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+    // const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
+    const apiBase = root.getAttribute('data-api') || '/app/api/cotizacionCRM.php'
  
     root.addEventListener('click', (e) => {
       const btn = e.target.closest('.btn-procesar-compra')

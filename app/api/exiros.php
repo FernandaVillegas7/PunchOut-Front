@@ -40,7 +40,7 @@ try {
                 $timestamp = date('c'); // ISO 8601
                 $sessionId = $result['data']['SessionID'];
                 $protocol = $result['protocol'] ?? 'cXML';
-                $startUrl = "https://localhost/B2B-EXIROS-FRONT/shop?SessionID={$sessionId}";
+                $startUrl = "https://exiros.mersolsureste.com.mx/shop?SessionID={$sessionId}";
 
                 if (strcasecmp($protocol, 'OCI') === 0) {
                     // For OCI logins, redirect the browser into the shop with SessionID
@@ -126,7 +126,6 @@ try {
             echo json_encode($cart);
             exit;
 
-
         case 'insert-carrito':
             if ($requestMethod === 'POST') {
                 $input = file_get_contents('php://input');
@@ -179,29 +178,29 @@ try {
                 exit;
             }
             break;
-        
-        case 'SaveCarrito':  
-            if ($requestMethod === 'POST') {  
-                $input = file_get_contents('php://input');  
+
+        case 'SaveCarrito':
+            if ($requestMethod === 'POST') {
+                $input = file_get_contents('php://input');
                 $data = json_decode($input, true);
 
-                if (json_last_error() !== JSON_ERROR_NONE) {  
-                    http_response_code(400);  
-                    header('Content-Type: application/json; charset=UTF-8');  
-                    echo json_encode([  
-                        'isError' => true,  
-                        'message' => 'JSON inválido en el body: ' . json_last_error_msg()  
-                    ]);  
-                    exit;  
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    http_response_code(400);
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode([
+                        'isError' => true,
+                        'message' => 'JSON inválido en el body: ' . json_last_error_msg()
+                    ]);
+                    exit;
                 }
 
                 $result = $controller->SaveCarrito($data ?? []);
 
                 // The controller already normalizes the response and carries data (NuevoCarritoID)  
-                header('Content-Type: application/json; charset=UTF-8');  
-                echo json_encode($result);  
-                exit;  
-            }  
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode($result);
+                exit;
+            }
             break;
 
         case 'get-session':
@@ -241,6 +240,17 @@ try {
                 echo json_encode($result);
                 exit;
             }
+            break;
+            
+        
+        case 'ExirosGetCategorias':
+
+            // Controller method does not expect external $data; call without arguments
+            $categorias = $controller->ExirosGetCategorias();
+
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($categorias);
+            exit;
             break;
 
 

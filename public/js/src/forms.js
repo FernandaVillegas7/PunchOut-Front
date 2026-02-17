@@ -13,7 +13,7 @@ $('#contactForm').on('submit', function (e) {
 
         $.ajax({
             type: 'POST',
-            url: '/b2c/app/api/forms.php?method=CrearFormularioCliente',
+            url: '/app/api/forms.php?method=CrearFormularioCliente',
             contentType: 'application/json',
             dataType: 'json',
             data: JSON.stringify(payload),

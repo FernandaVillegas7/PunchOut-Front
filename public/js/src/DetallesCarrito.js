@@ -647,9 +647,9 @@ function GenerarOCI(orderData) {
         addHidden(`NEW_ITEM-VENDOR[${n}]`, "108752")
         // Manufacturer and custom fields
         addHidden(`NEW_ITEM-MANUFACTCODE[${n}]`, item.manufacturer || '')
-        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.manufacturerModelNumber || '')
+        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.codigoArticulo  || '')
         // CUST_FIELD1: max length 10 -> remove non-alphanumerics then clamp to 10
-        const _rawC1 = (item.supplierPartAuxiliaryID || item.codigoArticulo || '');
+        const _rawC1 = (item.manufacturerModelNumber || item.codigoArticulo || '');
         const _sanC1 = _rawC1.replace(/[^A-Za-z0-9]/g, '');
         const _clampC1 = _sanC1.substring(0, 10);
         addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, _clampC1)

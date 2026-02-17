@@ -1,6 +1,7 @@
 // Configuración global
 //const repoBase = '/AXEL-B2B-EXIROS-FRONT';
-const repoBase = '/B2B-EXIROS-FRONT'; 
+// const repoBase = '/B2B-EXIROS-FRONT'; 
+const repoBase = ''; 
 const apiMisCompras = `${repoBase}/app/api/misCompras.php`;
 let currentClienteID = "";
 // Select2 de artículos (Exiros Search Products)
@@ -74,7 +75,7 @@ $('#articulo').select2({
 });
 
 // Enviar OCI desde Compra Rápida
-$('#btnEnviarOCI').on('click', function (e) {
+$('#btnEnviarOCI').on('click', async function (e) {
     e.preventDefault();
 
     if (!itemsCotizacion || itemsCotizacion.length === 0) {
@@ -82,33 +83,55 @@ $('#btnEnviarOCI').on('click', function (e) {
         return;
     }
 
-    // Construir orderData como en DetallesCarrito
-    const hook = (window.exportedCarrito && window.exportedCarrito.hook) || {
-        buyerCookie: null,
-        browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl,
-        extrinsics: []
-    };
-    const items = itemsCotizacion.map(it => ({
-        item: {
-            shortname: String(it.shortName || '').trim(),
-            longname: String(it.longName || '').trim(),
-            unitOfMeasure: it.unitOfMeasure || '',
-            itemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
-            priceUnit: 1,
-            unitPrice: Number(Number(it.amount || 0).toFixed(2)),
-            quantity: Number(it.cantidad || 1),
-            currency: it.currency || 'MXN',
-            category: (it.category || '').trim(),
-            supplierPartID: it.supplierPartID || '',
-            supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
-            manufacturer: it.manufacturer || '',
-            manufacturerModelNumber: it.manufacturerModelNumber || '',
-            codigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || ''
-        }
-    }));
+    const $btn = $(this);
+    const originalHtml = $btn.html();
+    
+    try {
+        // Mostrar estado de carga
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Enviando...');
+        
+        // Obtener datos de sesión PunchOut
+        const hookData = await obtenerDatosSesionPunchOut();
+        
+        // Construir orderData con datos reales de la sesión
+        const hook = hookData?.data?.hook || {
+            buyerCookie: sessionStorage.getItem('punchoutSessionID') || '',
+            browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl || hookData?.data?.hook?.browserFormPostUrl || '',
+            extrinsics: []
+        };
+        
+        const items = itemsCotizacion.map(it => ({
+            item: {
+                shortname: String(it.shortName || '').trim(),
+                longname: String(it.longName || '').trim(),
+                unitOfMeasure: it.unitOfMeasure || '',
+                itemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
+                priceUnit: 1,
+                unitPrice: Number(Number(it.amount || 0).toFixed(2)),
+                quantity: Number(it.cantidad || 1),
+                currency: it.currency || 'MXN',
+                category: (it.category || '').trim(),
+                supplierPartID: it.supplierPartID || '',
+                supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
+                manufacturer: it.manufacturer || '',
+                manufacturerModelNumber: it.manufacturerModelNumber || '',
+                codigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || ''
+            }
+        }));
 
-    const orderData = { hook, items };
-    GenerarOCI_Quick(orderData);
+        const orderData = { hook, items };
+        console.log('Enviando OCI con datos:', orderData);
+        GenerarOCI_Quick(orderData);
+        
+    } catch (error) {
+        console.error('Error al obtener datos de sesión:', error);
+        alert('Error al preparar el envío. Verifique su sesión PunchOut.');
+    } finally {
+        // Restaurar botón después de 2 segundos
+        setTimeout(() => {
+            $btn.prop('disabled', false).html(originalHtml);
+        }, 2000);
+    }
 });
 
 function GenerarOCI_Quick(orderData) {
@@ -117,9 +140,15 @@ function GenerarOCI_Quick(orderData) {
     form.enctype = 'application/x-www-form-urlencoded';
     form.acceptCharset = 'UTF-8';
 
-    const hookUrl = (typeof orderData.hook === 'string' && orderData.hook)
-        || (orderData.hook && typeof orderData.hook.browserFormPostUrl === 'string' && orderData.hook.browserFormPostUrl)
-        || '';
+    let hookUrl = (typeof orderData.hook === 'string' && orderData.hook)
+        || (orderData.hook && orderData.hook.browserFormPostUrl)
+        || window.HOOK_URL || '';
+        
+    if (!hookUrl) {
+        alert('No se encontró URL de destino.');
+        return;
+    }
+    
     form.action = hookUrl;
 
     const addHidden = (name, value) => {
@@ -134,74 +163,78 @@ function GenerarOCI_Quick(orderData) {
         const ta = document.createElement('textarea');
         ta.name = name;
         ta.style.display = 'none';
-        ta.cols = 20;
         ta.value = text != null ? String(text) : '';
         form.appendChild(ta);
     };
 
     (orderData.items || []).forEach((wrapper, idx) => {
         const n = idx + 1;
-        const item = (wrapper && wrapper.item) || {};
+        const item = wrapper.item || {};
 
-        const price = Number(item.unitPrice ?? item.itemPrice ?? 0);
-        const qty = Number(item.quantity ?? 0);
-        const matgrp = (item.category || '').trim().substring(0, 10);
-        const safeTrim = (v) => (v != null ? String(v).trim() : '');
-        const shortnm = safeTrim(item.shortname || '');
-        const longnm = safeTrim(item.longname || '');
-
-        const _claveForImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || '';
-        const _codigoForImg = item.codigoArticulo || item.codigoInterno || item.supplierPartAuxiliaryID || item.supplierPartID || '';
-        let _dynImgUrl = (_claveForImg && _codigoForImg)
-            ? `https://mersolsureste.com.mx/articulos/index.php?img=${encodeURIComponent(_codigoForImg)}`
-            : (item.imagen || '');
-        _dynImgUrl = _dynImgUrl.replace(/[\r\n]+/g, '&').replace(/\s*&\s*/g, '&').replace('?&', '?').replace(/&&+/g, '&').trim();
-
-        addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartID);
-        addHidden(`NEW_ITEM-MATGROUP[${n}]`, matgrp);
-        addHidden(`NEW_ITEM-DESCRIPTION[${n}]`, shortnm);
+        // Mapeo exacto de DetallesCarrito.js
+        addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartAuxiliaryID || item.codigoArticulo);
+        addHidden(`NEW_ITEM-MATGROUP[${n}]`, (item.category || '').substring(0, 10));
+        addHidden(`NEW_ITEM-DESCRIPTION[${n}]`, item.shortname);
         addHidden(`NEW_ITEM-LANGUAGE[${n}]`, 'ES');
-        addHidden(`NEW_ITEM-PRICE[${n}]`, price.toFixed(2));
+        addHidden(`NEW_ITEM-PRICE[${n}]`, Number(item.unitPrice).toFixed(2));
         addHidden(`NEW_ITEM-CURRENCY[${n}]`, item.currency);
-        addHidden(`NEW_ITEM-QUANTITY[${n}]`, qty);
-        addHidden(`NEW_ITEM-PRICEUNIT[${n}]`, item.priceUnit ?? 1);
+        addHidden(`NEW_ITEM-QUANTITY[${n}]`, item.quantity);
+        addHidden(`NEW_ITEM-PRICEUNIT[${n}]`, item.priceUnit || 1);
         addHidden(`NEW_ITEM-UNIT[${n}]`, item.unitOfMeasure);
-        addHidden(`NEW_ITEM-ATTACHMENT[${n}]`, _dynImgUrl);
+        
+        // URL de Imagen
+        const imgUrl = `https://mersolsureste.com.mx/articulos/index.php?img=${encodeURIComponent(item.codigoArticulo)}`;
+        addHidden(`NEW_ITEM-ATTACHMENT[${n}]`, imgUrl);
+        
         addHidden(`NEW_ITEM-VENDOR[${n}]`, '108752');
         addHidden(`NEW_ITEM-MANUFACTCODE[${n}]`, item.manufacturer || '');
-        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.manufacturerModelNumber || item.supplierPartID || '');
-        // CUST_FIELD1: max length 10 -> remove non-alphanumerics then clamp to 10
-        (function(){
-            const raw = (item.supplierPartAuxiliaryID || item.codigoArticulo || '');
-            const sanitized = raw.replace(/[^A-Za-z0-9]/g, '');
-            const clamped = sanitized.substring(0, 10);
-            addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, clamped);
-        })();
+        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.codigoArticulo || '');
+
+        // CUST_FIELD1 (Sanitizado)
+        const rawC1 = (item.manufacturerModelNumber || item.codigoArticulo || '');
+        const clampedC1 = rawC1.replace(/[^A-Za-z0-9]/g, '').substring(0, 10);
+        addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, clampedC1);
+
         addHidden(`NEW_ITEM-URL[${n}]`, window.location.href);
-        addLongText(`NEW_ITEM-LONGTEXT_${n}:132[]`, longnm);
+        addLongText(`NEW_ITEM-LONGTEXT_${n}:132[]`, item.longname);
     });
 
     document.body.appendChild(form);
-  
-    if (hookUrl) {
-        HTMLFormElement.prototype.submit.call(form);
-    }
-    return form;
+    HTMLFormElement.prototype.submit.call(form);
+}
+
+
+// Función auxiliar para obtener SessionID de PunchOut
+function getPunchoutSID() {
+  try {
+    return sessionStorage.getItem('punchoutSessionID');
+  } catch (e) {
+    return null;
+  }
 }
 
 async function obtenerDatosSesionPunchOut() {
   const sessionID = sessionStorage.getItem('punchoutSessionID');
-  if (!sessionID) return null;
+  if (!sessionID) {
+    console.warn('No se encontró SessionID de PunchOut');
+    return null;
+  }
 
   try {
-    const res = await fetch(`app/api/exiros.php?method=getPunchoutSession`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ SessionID: sessionID })
+    const res = await fetch(`app/api/exiros.php?method=get-session&SessionID=${encodeURIComponent(sessionID)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
 
-    if (!res.ok) throw new Error('Error al obtener sesión PunchOut');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    
+    if (data.error || data.isError) {
+      console.error('Error del servidor:', data.message);
+      return null;
+    }
+    
+    console.log('Datos de sesión obtenidos:', data);
     return data;
   } catch (err) {
     console.error('Error al recuperar sesión:', err);
@@ -230,26 +263,6 @@ $('#btnAgregar').on('click', function (e) {
   $('#cantidad').val('1');
   listItems();
 });
-
-async function obtenerDatosSesionPunchOut() {
-  const sessionID = sessionStorage.getItem('punchoutSessionID');
-  if (!sessionID) return null;
-
-  try {
-    const res = await fetch(`app/api/exiros.php?method=getPunchoutSession`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ SessionID: sessionID })
-    });
-
-    if (!res.ok) throw new Error('Error al obtener sesión PunchOut');
-    const data = await res.json();
-    return data;
-  } catch (err) {
-    console.error('Error al recuperar sesión:', err);
-    return null;
-  }
-}
 
 
 function listItems() {
@@ -305,102 +318,70 @@ function listItems() {
 
 $('#btnSolicitar').on('click', async function (e) {
     e.preventDefault();
+    let $btn = $(this);
+
+    if (!itemsCotizacion || itemsCotizacion.length === 0) {
+        Swal.fire('Error', 'No hay artículos para procesar.', 'error');
+        return;
+    }
+
+    let sid = sessionStorage.getItem('punchoutSessionID') || new URLSearchParams(location.search).get('SessionID');
+
+    // NORMALIZACIÓN: Ahora es idéntica a la de DetallesCarrito.js
+    let itemsNormalizados = itemsCotizacion.map(it => ({
+        item: {
+            shortname: String(it.shortName || '').trim(),
+            longname: String(it.longName || '').trim(),
+            unitOfMeasure: it.unitOfMeasure || 'PZA',
+            itemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
+            priceUnit: 1,
+            unitPrice: Number(Number(it.amount || 0).toFixed(2)),
+            quantity: Number(it.cantidad || 1),
+            currency: it.currency || 'MXN',
+            category: (it.category || '').trim(),
+            supplierPartID: it.supplierPartID || '',
+            supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
+            manufacturer: it.manufacturer || '',
+            manufacturerModelNumber: it.manufacturerModelNumber || '',
+            codigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || ''
+        }
+    }));
+
+    let payload = {
+        SessionID: sid,
+        hook: {
+             browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl || '',
+             buyerCookie: sessionStorage.getItem('punchoutSessionID') || '', 
+             extrinsics: []
+        },
+        items: itemsNormalizados // Enviamos el array con el wrapper { item: ... }
+    };
+
+    let originalHtml = $btn.html();
+    $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Enviando...');
 
     try {
-        const clienteID = "mersolsureste"; 
-        const hookData = await obtenerDatosSesionPunchOut();
-        const hook = hookData?.hook || {};
-        
-        const payload = {
-            HookUrl: window.HOOK_URL || window.BrowserFormPostUrl  || '',
-            Username: "usuarioDemo",
-            Password: "demo123",
-            SessionID: "SESSION-123",
-            BuyerCookie: "",
-            BrowserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl || "https://b2b.com/compra",
-            Extrinsics: "",
-            BuyerCookie: hook?.buyerCookie || "-",
-            browserFormPostUrl: hook.browserFormPostUrl || "-",
-            Extrinsics: hook?.extrinsics || "[]",
-            cXMLResponse: "",
-            StatusResponse: "",
-            FolioCotizacion: "SinCotizacion",
-
-            Items: itemsCotizacion.map((it, idx) => ({
-                Partida: idx + 1,
-                CodigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || "",
-                Quantity: Number(it.cantidad || 1),
-                UnitPrice: Number(it.amount || 0),
-                ItemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
-                UnitOfMeasure: it.unitOfMeasure || "PZA",
-                Currency: it.currency || "MXN",
-                Category: it.category || "DEFAULT",
-                Shortname: it.shortName || (it.descripcion ? it.descripcion.substring(0, 40) : "SIN NOMBRE"),
-                Longname: it.longName || it.descripcion || "SIN DESCRIPCION",
-                Manufacturer: it.manufacturer || "GENERICA",
-                ManufacturerModelNumber: it.manufacturerModelNumber || "N/A",
-                SupplierPartID: it.supplierPartID || "N/A",
-                SupplierPartAuxiliaryID: it.supplierPartAuxiliaryID || it.codigoInterno || ""
-            }))
-        };
-
-        $.ajax({
-            type: "POST",
-            url: `app/api/compraRapida.php?method=compra-rapida`,
-            dataType: "json",
+        const resp = await $.ajax({
+            type: 'POST',
+            url: `app/api/exiros.php?method=SaveCarrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`,
             data: JSON.stringify(payload),
-            contentType: "application/json",
-            success: function (response) {
-                const alertsContainer = document.getElementById("alertsContainer");
-                alertsContainer.innerHTML = "";
-
-                const alertDiv = document.createElement("div");
-                alertDiv.className = `alert ${response.isError ? "alert-danger" : "alert-success"} alert-dismissible fade show mt-3`;
-                alertDiv.role = "alert";
-                alertDiv.innerHTML = `
-                    <strong>${response.isError ? "Error" : "Éxito"}:</strong> 
-                    ${response.message || (response.isError ? "Ocurrió un error al procesar la compra." : "Compra procesada correctamente.")}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-
-                alertsContainer.appendChild(alertDiv);
-
-                if (!response.isError) {
-                    itemsCotizacion = [];
-                    listItems();
-                }
-            },
-            error: function (xhr) {
-                console.error(" Error AJAX:", xhr.responseText);
-
-                const alertsContainer = document.getElementById("alertsContainer");
-                alertsContainer.innerHTML = "";
-
-                const alertDiv = document.createElement("div");
-                alertDiv.className = "alert alert-danger alert-dismissible fade show mt-3";
-                alertDiv.role = "alert";
-                alertDiv.innerHTML = `
-                    <strong>Error:</strong> Error al enviar carrito al backend.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                alertsContainer.appendChild(alertDiv);
-            }
+            contentType: 'application/json',
+            dataType: 'json'
         });
-    } catch (err) {
-        const alertsContainer = document.getElementById("alertsContainer");
-        alertsContainer.innerHTML = "";
 
-        const alertDiv = document.createElement("div");
-        alertDiv.className = "alert alert-danger alert-dismissible fade show mt-3";
-        alertDiv.role = "alert";
-        alertDiv.innerHTML = `
-            <strong>Error:</strong> Error al generar el carrito.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        alertsContainer.appendChild(alertDiv);
+        if (!resp || resp.isError) {
+             throw new Error(resp?.message || 'Error al guardar el carrito.');
+        }
+
+        // Llamamos a la función de generación de OCI
+        GenerarOCI_Quick({ hook: payload.hook, items: itemsNormalizados });
+
+    } catch (err) {
+        console.error('Error:', err);
+        Swal.fire('Error', err.message, 'error');
+        $btn.prop('disabled', false).html(originalHtml);
     }
 });
-
 
 
 
@@ -503,8 +484,10 @@ $('#itemList').on('click', '.drop', function () {
 
   async function cargarPedidos(clienteID){
     try {
-      const res = await fetch(`/B2B-EXIROS-FRONT/app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`);
+      // const res = await fetch(`/B2B-EXIROS-FRONT/app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`);
+      const res = await fetch(`/app/api/misCompras.php?method=exiros-get-compra&clienteID=${encodeURIComponent(clienteID)}`);
       const data = await res.json();
+      
       render(Array.isArray(data)? data : [data]);
     } catch(err){
       console.error(" Error cargando pedidos:",err);

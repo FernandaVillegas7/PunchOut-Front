@@ -12,7 +12,7 @@ function registrarLogPagina() {
         .then(data => {
             const IP = data.ip || '';
             // Enviar el log al backend
-            fetch('/b2c/app/api/logSite.php?method=CrearLogPagina', {
+            fetch('/app/api/logSite.php?method=CrearLogPagina', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ Valor, FechaHora, IP })
@@ -22,7 +22,7 @@ function registrarLogPagina() {
         })
         .catch(() => {
             // Si no se puede obtener la IP, aún así intenta registrar el log sin IP
-            fetch('/b2c/app/api/logSite.php?method=CrearLogPagina', {
+            fetch('/app/api/logSite.php?method=CrearLogPagina', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ Valor, FechaHora, IP: '' })
