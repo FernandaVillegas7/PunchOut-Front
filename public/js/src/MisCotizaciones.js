@@ -37,17 +37,24 @@ let currentClienteID = "";
       UnitPrice: N(it.precio),
       Quantity: N(it.cantidad) || 1,
       Currency: currency,
-      Category: '',
-      SupplierPartID: it.claveFabricante || '',
+
+      Category: it.categoria || it.familia || it.linea || '', // MATGROUP (PUNTA MONT)
+      SupplierPartID: it.productoID || '',                      // VENDORMAT y MANUFACTMAT (ABAU-000157)
       SupplierPartAuxiliaryID: it.productoID || '',
-      Manufacturer: it.Marca || '',
-      ManufacturerModelNumber: it.claveFabricante ?? '',
-      CodigoArticulo: it.productoID ?? ''
+      Manufacturer: it.marca || it.Marca || it.fabricante || it.Fabricante || '',              // MANUFACTCODE (AUSTROMEX)
+      ManufacturerModelNumber: it.claveFabricante || '',        // CUST_FIELD1 (407)
+      CodigoArticulo: it.productoID || ''
     }))
     const sess = window.PunchoutSession || {}
+
+    let hookUrl = window.HOOK_URL || window.BrowserFormPostUrl || sess.HookUrl;
+    if (!hookUrl || hookUrl === '-' || hookUrl === 'null') {
+      console.warn("⚠️ Sesión no tiene HookUrl. Aplicando fallback de Tester OCI.");
+      hookUrl = "https://punchoutcommerce.com/tools/oci-roundtrip-return";
+    }
     return {
       ClienteID: cot.clienteID?.trim() || window.currentClienteID?.trim() || null,
-      HookUrl: window.HOOK_URL || window.BrowserFormPostUrl || sess.HookUrl|| "-",
+      HookUrl: hookUrl,
       Username: window.Username ||  "-",
       Password: window.Password ||  "-",
       BuyerCookie : window.BuyerCookie ||sess.BuyerCookie||  "-",
@@ -60,6 +67,27 @@ let currentClienteID = "";
       Items: items
     }
   }
+
+  const tracker = {
+    sendToServer: function(type, msg, data = null){
+      const sess =  window.PunchoutSession || {};
+      let sid = sess.SessionID || new URLSearchParams(location.search).get('SessionID') || sessionStorage.getItem('punchoutSessionID') || 'SinSesion';
+       fetch('app/api/loggerExiros.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                origen: 'DesdeCotizacionCRM', // <-- Identificador de este archivo
+                type: type,
+                session: sid,
+                message: msg,
+                data: data
+            })
+        }).catch(err => { /* Ignoramos fallos de red silenciosamente */ });
+    },
+    step: function(msg, data = null) { this.sendToServer('INFO', msg, data); },
+    success: function(msg, data = null) { this.sendToServer('OK', msg, data); },
+    error: function(msg, err) { this.sendToServer('ERROR', msg, err ? (err.message || err.toString()) : null); }
+  };
  
   // =========================
   // Fetch (AJAX)
@@ -87,23 +115,20 @@ let currentClienteID = "";
  
     const items = Array.isArray(cot.items) ? cot.items : []
  
-//=============================================================
-// Totales: aplica descuento y luego IVA por ítem
-//=============================================================
-    const subtotal = items.reduce((s, it) => {
-    const precioSubtotal = num(it.precio) * (1 - num(it.descuento) / 100)
-    // const precioConIVA   = precioSubtotal * (1 + num(it.impuesto1) / 100)
-    return s + precioSubtotal * (num(it.cantidad) || 1)
-    }, 0)
-    const total = subtotal
- 
+    // =============================================================
+    // Totales y Renderizado (Unificación para evitar repetir lógica)
+    // =============================================================
+    let subtotalFinal = 0;
+
     const rows = items.length
       ? items.map((it, idx) => {
-        const precioSubtotal = num(it.precio) - (num(it.precio) * (num(it.descuento) / 100))// aplica % de descuento
-         //const precioConIVA = precioSubtotal * (1 + num(it.impuesto1) / 100)                 aplica % IVA
-        const importe = precioSubtotal * (num(it.cantidad) || 1)                        // por cantidad
- 
-        return `
+          const precioSubtotal = num(it.precio) * (1 - num(it.descuento) / 100)
+          const cantidad = num(it.cantidad) || 1
+          const importe = precioSubtotal * cantidad
+          
+          subtotalFinal += importe; // Acumulamos en una sola pasada
+
+          return `
             <tr>
               <td>${idx + 1}</td>
               <td class="fw-semibold col-md-2">${it.productoID || ''}</td>
@@ -113,14 +138,14 @@ let currentClienteID = "";
                   ${it.marca ? `Fabricante: ${it.marca}` : ''}
                 </div>
               </td>
-              <td class="text-end">${num(it.cantidad).toFixed(2)}</td>
+              <td class="text-end">${cantidad.toFixed(2)}</td>
               <td class="text-center">${it.unidad || 'EA'}</td>
               <td class="text-end money">${fmtMoney(precioSubtotal, currency)}</td>
               <td class="text-end money">% ${it.descuento}</td>
               <td class="text-end money">${fmtMoney(importe, currency)}</td>
             </tr>
           `
-      }).join('')
+        }).join('')
       : `<tr><td colspan="8" class="text-center text-muted py-4">Sin artículos</td></tr>`
  
     return `
@@ -135,7 +160,7 @@ let currentClienteID = "";
                 <span class="text-semibold">Fecha: ${fmtFecha(cot.fechaCreacion)}</span>
               </div>
               <div class="d-flex align-items-center gap-2">
-                <span class="h6 mb-0 money">${fmtMoney(total, currency)}</span>
+                <span class="h6 mb-0 money">${fmtMoney(subtotalFinal, currency)}</span>
               </div>
             </div>
           </button>
@@ -155,7 +180,7 @@ let currentClienteID = "";
                     <div><strong>Fecha:</strong> ${fmtFecha(cot.fechaCreacion)}</div>
                   </div>
                   <hr>
-                  <div class="d-flex justify-content-between fw-semibold"><span>Total</span><span class="money">${fmtMoney(total, currency)}</span></div>
+                  <div class="d-flex justify-content-between fw-semibold"><span>Total</span><span class="money">${fmtMoney(subtotalFinal, currency)}</span></div>
                 </div>
               </div>
  
@@ -213,7 +238,6 @@ let currentClienteID = "";
   // ===================================
   async function cargarDesdeInput() {
     const root = byId('comprasRoot')
-    // const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
     const apiBase = root.getAttribute('data-api') || '/app/api/cotizacionCRM.php'
  
     const claveInput = byId('claveC')
@@ -241,7 +265,7 @@ let currentClienteID = "";
   }
  
   // =========================
-  // Init: SOLO configura eventos (no hace fetch automático)
+  // Init
   // =========================
   function init() {
     const btnSearch = byId('searchCot')
@@ -259,129 +283,99 @@ let currentClienteID = "";
   }
  
   // =========================
-  // POST a tu endpoint PHP (?method=exiros-Cotizacion-carrito)
+  // POST a tu endpoint PHP
   // =========================
- async function postCompra(apiBase, payload, btn) {
-  const url = `${apiBase}?method=exiros-Cotizacion-carrito`
-  console.log("POST a:", url, payload)
-
-  const old = btn.innerHTML
-  const clienteID = currentClienteID || payload.Username || ""
-
-  btn.disabled = true
-  btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Procesando…`
-
-  try {
-    const payloadCorregido = {
-      ...payload,
-      Extrinsics: JSON.stringify(payload.Extrinsics || {}),
-      StatusResponse: JSON.stringify(payload.StatusResponse || 'OK')
-    }
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        'Accept': 'application/json'
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify(payloadCorregido)
-    })
-
-const txt = await res.text()
-let json
-try {
-  json = JSON.parse(txt)
-} catch {
-  console.warn("Respuesta no JSON:", txt)
-  json = {}
-}
-
-if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} :: ${txt}`)
-
-
-
-// Forzar que se reconozca si `data` es un número (carrito ID)
-const carritoId = (typeof json.data === 'number') ? json.data
-  : (json.data?.carritoExirosID || json.carritoExirosID || null)
-
-// Extraer cliente
-let clienteFinal = currentClienteID || payload.ClienteID || payload.Username || null
-if (!clienteFinal || clienteFinal === "-" || clienteFinal === "") {
- // console.warn("⚠ ClienteID no válido, redirigiendo sin él")
-  clienteFinal = null
-}
-
-//  Redirección segura
-if (carritoId) {
-  // const redirectUrl = clienteFinal
-  //   ? `/B2B-EXIROS-FRONT/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(carritoId)}`
-  //   : `/B2B-EXIROS-FRONT/misCompras?carritoId=${encodeURIComponent(carritoId)}`
-    const redirectUrl = clienteFinal
-    ? `/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(carritoId)}`
-    : `/misCompras?carritoId=${encodeURIComponent(carritoId)}`
-  // console.log("Redireccionando a:", redirectUrl)
-  window.location.href = redirectUrl
-} else {
- // console.warn("No se recibió carritoId válido", json)
- // alert("La compra se guardó, pero no se devolvió un ID de carrito válido.")
-}
-
-
-
-  } catch (err) {
-    console.error(err)
-    alert("Error al procesar la compra: " + err.message)
-  } finally {
-    btn.disabled = false
-    btn.innerHTML = old
-  }
-}
-
-//function initProcesarCompra() {
-  //const root = byId('comprasRoot')
-  //if (!root) return
-
-  // const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
-  //const apiBase = root.getAttribute('data-api') || '/app/api/cotizacionCRM.php'
-
- // root.addEventListener('click', (e) => {
-   // const btn = e.target.closest('.btn-procesar-compra')
-   // if (!btn) return
-
-  //  const folio = btn.dataset.folio
-//    const cot = cotIndex.get(folio)
-//    if (!cot) {
-//      alert('No se encontró la cotización.')
-//      return
-//    }
-
-//    const payload = buildGuardarCompraPayload(cot)
+async function postCompra(apiBase, payload, btn) {
+    const url = `${apiBase}?method=exiros-Cotizacion-carrito`
+    console.log("POST a:", url, payload)
+    tracker.step('Iniciando fetch a postCompra (Guardando carrito en BD)', { url: url });
     
+    const old = btn.innerHTML
+    btn.disabled = true
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Procesando…`
 
-    // ⚠️ cuidado: GenerarOCI(payload) hace submit y redirige
-    // GenerarOCI(payload)
-//    postCompra(apiBase, payload, btn)
-//  })
-//}
+    try {
+      const payloadCorregido = {
+        ...payload,
+        Extrinsics: JSON.stringify(payload.Extrinsics || {}),
+        StatusResponse: JSON.stringify(payload.StatusResponse || 'OK')
+      }
 
-//document.addEventListener('DOMContentLoaded', init)
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(payloadCorregido)
+      })
 
+      const txt = await res.text()
+      let json
+      try {
+        // Abrimos el paquete que viene de la red
+        json = JSON.parse(txt)
+        
+        // 👇 EL DESEMPAQUETADOR DOBLE 👇
+        // Si el backend nos mandó el JSON disfrazado de texto (con las diagonales \), 
+        // lo volvemos a parsear para convertirlo en un objeto real.
+        if (typeof json === 'string') {
+            json = JSON.parse(json);
+        }
 
+      } catch {
+        console.warn("Respuesta no JSON:", txt)
+        json = {}
+      }
 
- 
- 
+      // ... el resto de tu código de postCompra sigue igualito ...
+
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} :: ${txt}`)
+      
+      tracker.success('Respuesta exitosa de postCompra', json);
+      
+      // 👇 EXTRACCIÓN DEL ID A PRUEBA DE BALAS 👇
+      let carritoId = parseInt(json.data, 10); 
+
+      // 2. Si no pudo (porque viene adentro de un arreglo o con otro nombre)
+      if (isNaN(carritoId) || carritoId <= 0) {
+          if (Array.isArray(json.data) && json.data.length > 0) {
+              carritoId = parseInt(json.data[0].CarritoExirosID || json.data[0].carritoExirosID, 10);
+          } else {
+              carritoId = parseInt(json.carritoExirosID || json.CarritoExirosID, 10);
+          }
+      }
+
+      // 3. Si después de todo esto sigue vacío, imprimimos el RAW para ver al culpable
+      if (isNaN(carritoId) || carritoId <= 0) {
+         throw new Error("El servidor respondió esto, pero no encontré el número de ID: " + JSON.stringify(json));
+      }
+      
+      // SOLO RETORNAMOS EL ID, CERO REDIRECCIONES AQUÍ
+      return carritoId;
+
+    } catch (err) {
+      console.error(err)
+      tracker.error('Fallo crítico en postCompra', err);
+      // Lanzamos el error hacia arriba para que initProcesarCompra lo atrape y muestre el alert
+      throw err; 
+    } finally {
+      btn.disabled = false
+      btn.innerHTML = old
+    }
+  }
+
   // ============================
   // ARMA el PAYLOAD y se ENVÍA
   // ============================
-  function initProcesarCompra() {
+function initProcesarCompra() {
     const root = byId('comprasRoot')
-     if (!root) return
+    if (!root) return
  
-    // const apiBase = root.getAttribute('data-api') || '/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php'
     const apiBase = root.getAttribute('data-api') || '/app/api/cotizacionCRM.php'
  
-    root.addEventListener('click', (e) => {
+    root.addEventListener('click', async (e) => { 
       const btn = e.target.closest('.btn-procesar-compra')
       if (!btn) return
  
@@ -389,24 +383,93 @@ if (carritoId) {
       const cot = cotIndex.get(folio)
       
       if (!cot) {
-                  alert('No se encontró la cotización.')
-                  return
-                }
- 
+        alert('No se encontró la cotización.')
+        return
+      }
+      tracker.step('Inspeccionando cotizacion cruda', { 
+          folio: folio, 
+          itemsCrudos: cot.items // Aquí mandamos el arreglo completo
+      });
+      console.log("🕵️‍♀️ === DATOS CRUDOS DE LA COTIZACIÓN ===");
+      console.log("Revisa cómo se llaman exactamente las variables de marca, categoría, etc.");
+      console.table(cot.items); // Te dibuja una tabla perfecta
+      console.dir(cot.items);
+      tracker.step('Boton procesar compra click', {folio: folio});
+
+      // =========================================================
+      // 1. RECUPERAR LA SESIÓN PRIMERO
+      // =========================================================
+      try {
+        tracker.step('Buscando sesión activa de PunchOut en el servidor...');
+        
+        let sid = new URLSearchParams(location.search).get('SessionID') || sessionStorage.getItem('punchoutSessionID');
+        
+        if (sid) {
+          const sessionRes = await fetch(`/app/api/exiros.php?method=get-session&SessionID=${encodeURIComponent(sid)}`).then(r => r.json());
+          
+          if (sessionRes && !sessionRes.isError && sessionRes.data && sessionRes.data.hook) {
+             window.HOOK_URL = sessionRes.data.hook.browserFormPostUrl;
+             window.BrowserFormPostUrl = sessionRes.data.hook.browserFormPostUrl;
+             tracker.success('Sesión recuperada desde la API local', { hook: window.HOOK_URL });
+          } else {
+             tracker.step('La API no devolvió un hook válido, se usará el fallback');
+          }
+        } else {
+          tracker.step('No hay SessionID en la URL ni en Storage.');
+        }
+      } catch (err) {
+        tracker.error('Fallo al intentar recuperar la sesión del servidor', err);
+      }
+
+      // =========================================================
+      // 2. ARMAR PAYLOAD
+      // =========================================================
       const payload = buildGuardarCompraPayload(cot)
       
-      GenerarOCI(payload)
-      postCompra(apiBase, payload, btn)
+      tracker.success("Sesión y Hook listos para enviar", { hookUrl: payload.HookUrl });
+      tracker.step('Preparando envío OCI', { 
+          folio: folio, 
+          hookUrlResuelto: payload.HookUrl 
+      });
+
+      // =========================================================
+      // 3. EL NUEVO ORDEN: GUARDAR BD -> OCI -> REDIRIGIR
+      // =========================================================
+      try {
+        tracker.step('Iniciando guardado en Base de Datos...');
+        
+        // PRIMERO: Esperamos a que la base de datos nos conteste y nos dé el ID
+        const nuevoCarritoID = await postCompra(apiBase, payload, btn);
+        tracker.success("Carrito guardado en BD", { ID: nuevoCarritoID });
+        
+        // SEGUNDO: Disparamos el OCI enviándole el Payload y el Nuevo ID
+        GenerarOCI(payload, nuevoCarritoID); 
+        tracker.success("Formulario OCI armado y enviado al navegador.");
+        
+        // TERCERO: Redirigimos la pantalla principal a Mis Compras
+        let clienteFinal = currentClienteID || payload.ClienteID || payload.Username || null;
+        const redirectUrl = (clienteFinal && clienteFinal !== "-")
+          ? `/misCompras?clienteID=${encodeURIComponent(clienteFinal)}&carritoId=${encodeURIComponent(nuevoCarritoID)}`
+          : `/misCompras?carritoId=${encodeURIComponent(nuevoCarritoID)}`;
+        
+        window.location.href = redirectUrl;
+
+      } catch (err) {
+        tracker.error("Flujo detenido por error", err);
+        alert("Ocurrió un error al procesar el carrito: " + err.message);
+      }
     })
   }
- 
-  document.addEventListener('DOMContentLoaded', init)
-})()
  
 // ============================
 // GENERADOR DE OCI
 // ============================
-function GenerarOCI(cot) {
+
+function GenerarOCI(cot, nuevoCarritoID) {
+  if (!cot || !cot.Items || cot.Items.length === 0) {
+      throw new Error("No hay artículos en la cotización para armar el OCI.");
+  }
+
   let form = document.createElement("form");
   form.method = "POST";
   form.enctype = "application/x-www-form-urlencoded";
@@ -446,55 +509,51 @@ function GenerarOCI(cot) {
     const UoM           = item.UnitOfMeasure || item.Unit || "EA";
     const Shortname     = (item.Shortname || "").toString().trim();
     const Longname      = (item.Longname  || "").toString().trim();
-    const VendorMat     = item.SupplierPartID || ""; // código fabricante
-    const ManufactMat   = item.SupplierPartID || ""; // opcional
-    const MatGroup      = (item.Category || "").toString().trim().substring(0, 10);
-    const CodigoArticulo= item.CodigoArticulo || item.SupplierPartAuxiliaryID || "";
- 
-    // Puedes construir una imagen dinámica si la tienes (opcional)
-    const dynImgUrl = CodigoArticulo
-      ? `https://mersolsureste.com.mx/articulos/index.php?img=${encodeURIComponent(CodigoArticulo)}`
+    const VendorMat     = item.SupplierPartID || item.supplierPartID || item.CodigoArticulo || item.codigoArticulo || ""; 
+    const ManufactMat   = item.SupplierPartID || item.supplierPartID || item.CodigoArticulo || item.codigoArticulo || "";
+    const MatGroup      = (item.Category || item.category || "").toString().trim().substring(0, 10);
+    const ManufactCode  = item.Manufacturer || item.manufacturer || "";
+
+    const dynImgUrl = ManufactMat
+      ? `https://mersolsureste.com.mx/articulos/index.php?img=${encodeURIComponent(ManufactMat)}`
       : (item.imagen || "");
  
-    // 4) Campos OCI requeridos
-    addHidden(`NEW_ITEM-VENDORMAT[${n}]`, VendorMat);
-    addHidden(`NEW_ITEM-MATGROUP[${n}]`, MatGroup);
+   addHidden(`NEW_ITEM-VENDORMAT[${n}]`, VendorMat);       // ABAU-000157
+    addHidden(`NEW_ITEM-MATGROUP[${n}]`, MatGroup || "OTROS");         // PUNTA MONT
     addHidden(`NEW_ITEM-DESCRIPTION[${n}]`, Shortname);
-    addHidden(`NEW_ITEM-LANGUAGE[${n}]`, "ES");
+    addHidden(`NEW_ITEM-LANGUAGE[${n}]`, "es-ES");
     addHidden(`NEW_ITEM-PRICE[${n}]`, Price.toFixed(2));
     addHidden(`NEW_ITEM-CURRENCY[${n}]`, Currency);
     addHidden(`NEW_ITEM-QUANTITY[${n}]`, Qty);
     addHidden(`NEW_ITEM-PRICEUNIT[${n}]`, item.PriceUnit ?? 1);
     addHidden(`NEW_ITEM-UNIT[${n}]`, UoM);
     addHidden(`NEW_ITEM-ATTACHMENT[${n}]`, dynImgUrl);
- 
-    // Ajusta si tienes un vendor fijo
     addHidden(`NEW_ITEM-VENDOR[${n}]`, "108752");
- 
-    // Manufacturer opcional
-    addHidden(`NEW_ITEM-MANUFACTCODE[${n}]`, item.Manufacturer || "");
-    addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, ManufactMat);
- 
-    // Custom fields (ejemplo: Folio y código limpio)
-    const c1Raw  = CodigoArticulo;
-    const c1San  = c1Raw.replace(/[^A-Za-z0-9]/g, "").substring(0, 10);
-    addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, c1San);
+    addHidden(`NEW_ITEM-MANUFACTCODE[${n}]`, ManufactCode); // AUSTROMEX
+    addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, ManufactMat);   // ABAU-000157
+
+    const _rawC1 = item.ManufacturerModelNumber || item.CodigoArticulo || "";
+    const _sanC1 = _rawC1.replace(/[^A-Za-z0-9]/g, "").substring(0, 10);
+    addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, _sanC1);
+    if (nuevoCarritoID) {
+        addHidden(`NEW_ITEM-CUST_FIELD2[${n}]`, String(nuevoCarritoID));
+    }
+    // Mandamos el folio para tu control
     addHidden(`NEW_ITEM-CUST_FIELD4[${n}]`, String(cot.FolioCotizacion || ""));
- 
-    // URL de retorno opcional
     addHidden(`NEW_ITEM-URL[${n}]`, window.location.href);
- 
-    // LONGTEXT (formato común aceptado por probadores OCI)
     addLongText(`NEW_ITEM-LONGTEXT_${n}:132[]`, Longname);
   });
  
   document.body.appendChild(form);
  
-  
- 
   if (hookUrl) {
     form.target = "_blank";
     HTMLFormElement.prototype.submit.call(form);
   }
+  
+  setTimeout(() => form.remove(), 500);
   return form;
 }
+
+ init(); 
+})()

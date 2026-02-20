@@ -316,73 +316,285 @@ function listItems() {
   $('#totalItems').html(`$ ${total.toFixed(2)} ${currency}`);
 }
 
+const tracker = {
+    // Función central que envía datos a PHP asíncronamente
+    sendToServer: function(type, msg, data = null) {
+        // Intentamos obtener la sesión activa
+        let sid = new URLSearchParams(location.search).get('SessionID') || sessionStorage.getItem('punchoutSessionID') || 'SinSesion';
+        
+        fetch('app/api/loggerExiros.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                origen: 'CompraRapida', // Saber qué archivo generó el log
+                type: type,
+                session: sid,
+                message: msg,
+                data: data
+            })
+        }).catch(err => { /* Ignoramos fallos de red silenciosamente */ });
+    },
+    step: function(msg, data = null) {
+        this.sendToServer('INFO', msg, data);
+    },
+    success: function(msg, data = null) {
+        this.sendToServer('OK', msg, data);
+    },
+    error: function(msg, err) {
+        this.sendToServer('ERROR', msg, err ? err.toString() : null);
+    }
+};
+
+
 $('#btnSolicitar').on('click', async function (e) {
     e.preventDefault();
-    let $btn = $(this);
+    const $btn = $(this);
+    const originalHtml = $btn.html();
 
-    if (!itemsCotizacion || itemsCotizacion.length === 0) {
-        Swal.fire('Error', 'No hay artículos para procesar.', 'error');
-        return;
-    }
+    tracker.step("Iniciando clic en #btnSolicitar");
 
-    let sid = sessionStorage.getItem('punchoutSessionID') || new URLSearchParams(location.search).get('SessionID');
+    // 0. Recuperar SessionID (Clave para que exiros.php reconozca la sesión)
+    let sid = (function () {
+        let u = new URLSearchParams(location.search).get('SessionID');
+        if (u) { try { sessionStorage.setItem('punchoutSessionID', u); } catch (_) { } }
+        return u || sessionStorage.getItem('punchoutSessionID');
+    })();
 
-    // NORMALIZACIÓN: Ahora es idéntica a la de DetallesCarrito.js
-    let itemsNormalizados = itemsCotizacion.map(it => ({
-        item: {
-            shortname: String(it.shortName || '').trim(),
-            longname: String(it.longName || '').trim(),
-            unitOfMeasure: it.unitOfMeasure || 'PZA',
-            itemPrice: Number((Number(it.amount || 0) * Number(it.cantidad || 1)).toFixed(2)),
-            priceUnit: 1,
-            unitPrice: Number(Number(it.amount || 0).toFixed(2)),
-            quantity: Number(it.cantidad || 1),
-            currency: it.currency || 'MXN',
-            category: (it.category || '').trim(),
-            supplierPartID: it.supplierPartID || '',
-            supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
-            manufacturer: it.manufacturer || '',
-            manufacturerModelNumber: it.manufacturerModelNumber || '',
-            codigoArticulo: it.codigoInterno || it.supplierPartAuxiliaryID || it.supplierPartID || ''
-        }
-    }));
-
-    let payload = {
-        SessionID: sid,
-        hook: {
-             browserFormPostUrl: window.HOOK_URL || window.BrowserFormPostUrl || '',
-             buyerCookie: sessionStorage.getItem('punchoutSessionID') || '', 
-             extrinsics: []
-        },
-        items: itemsNormalizados // Enviamos el array con el wrapper { item: ... }
-    };
-
-    let originalHtml = $btn.html();
-    $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Enviando...');
+    // UI State
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
 
     try {
-        const resp = await $.ajax({
-            type: 'POST',
-            url: `app/api/exiros.php?method=SaveCarrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`,
-            data: JSON.stringify(payload),
-            contentType: 'application/json',
-            dataType: 'json'
-        });
-
-        if (!resp || resp.isError) {
-             throw new Error(resp?.message || 'Error al guardar el carrito.');
+        // PASO 1: Obtener la sesión y el HookUrl (Tal cual lo hace DetallesCarrito)
+      // PASO 1: Obtener la sesión y el HookUrl
+        tracker.step("Paso 1: Recuperando sesión activa de la API");
+        const sessionRes = await $.getJSON(`app/api/exiros.php?method=get-session${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`);
+        
+        if (!sessionRes || sessionRes.isError || sessionRes.error === true) {
+            throw new Error(sessionRes.message || "No se pudo recuperar la sesión de PunchOut");
         }
 
-        // Llamamos a la función de generación de OCI
-        GenerarOCI_Quick({ hook: payload.hook, items: itemsNormalizados });
+        // Extraemos HOOK_URL. 
+        // Si viene NULL de la API (como en tu log), buscamos en window.HOOK_URL.
+        // Si todo falla, ponemos el tester por defecto como SALVAVIDAS para que no rompa.
+        // Buscamos el Hook en todas las rutas posibles donde tu API lo puede esconder:
+        let hookUrl = 
+            (sessionRes.data && sessionRes.data.hook && sessionRes.data.hook.browserFormPostUrl) || // 1. Como lo lee DetallesCarrito (Oficial)
+            sessionRes.HOOK_URL ||                                                                  // 2. Como lo lee OCI puro
+            (sessionRes.extrinsics && sessionRes.extrinsics.HOOK_URL) ||                            // 3. Dentro de extrinsics
+            window.HOOK_URL;                                                                        // 4. Memoria global (Caché)
+                
+        if (!hookUrl || hookUrl === 'null') {
+            console.warn("⚠️ Sesión PHP devolvió Hook Nulo. Aplicando fallback de Tester OCI.");
+            hookUrl = "https://punchoutcommerce.com/tools/oci-roundtrip-return"; 
+            // Opcional: throw new Error("La sesión de PunchOut caducó o no tiene HookUrl. Por favor, reinicia el flujo desde el ERP.");
+        }
+        
+        tracker.success("Sesión y Hook recuperados", { hookUrl });
+
+
+        // PASO 2: Guardando en base de datos
+        tracker.step("Paso 2: Construyendo Payload de Carrito");
+        
+        // Vamos a intentar leer de las 3 variables más comunes que usas en tu sistema
+        // window.exportedCarrito (usado en DetallesCarrito)
+        // window.itemsCotizacion (tu array global)
+        // window.carrito (otra posibilidad común)
+        let itemsFuente = [];
+        if (typeof itemsCotizacion !== 'undefined' && itemsCotizacion.length > 0) {
+            itemsFuente = itemsCotizacion;
+        } else if (window.exportedCarrito && window.exportedCarrito.items && window.exportedCarrito.items.length > 0) {
+            itemsFuente = window.exportedCarrito.items;
+        } else if (typeof carrito !== 'undefined' && carrito.length > 0) {
+            itemsFuente = carrito;
+        }
+
+        const itemsParaGuardar = itemsFuente.map(it => ({
+            item: {
+                shortname: String(it.shortName || it.shortname || '').trim(),
+                longname: String(it.longName || it.longname || '').trim(),
+                unitOfMeasure: it.unitOfMeasure || '',
+                itemPrice: Number((Number(it.amount || it.itemPrice || it.unitPrice || 0) * Number(it.cantidad || it.quantity || 1)).toFixed(2)),
+                priceUnit: 1,
+                unitPrice: Number(Number(it.amount || it.unitPrice || it.itemPrice || 0).toFixed(2)),
+                quantity: Number(it.cantidad || it.quantity || 1),
+                currency: it.currency || 'MXN',
+                category: String(it.category || '').trim(),
+                supplierPartID: it.supplierPartID || '',
+                supplierPartAuxiliaryID: it.supplierPartAuxiliaryID || '',
+                manufacturer: it.manufacturer || '',
+                manufacturerModelNumber: it.manufacturerModelNumber || '',
+                codigoArticulo: it.codigoInterno || it.codigoArticulo || it.supplierPartAuxiliaryID || it.supplierPartID || '',
+                imagen: it.imagen || ''
+            }
+        }));
+
+        if (itemsParaGuardar.length === 0) {
+            console.error("⚠️ Variables de carrito vacías:", { itemsCotizacion: typeof itemsCotizacion, windowExported: typeof window.exportedCarrito });
+            throw new Error("El carrito está vacío o las variables globales no están definidas en esta vista. Revisa la consola.");
+        }
+        // ==========================================
+        // LÓGICA DE FOLIO IDENTIFICADOR (COMPRA RÁPIDA)
+        // ==========================================
+        let sufijoUnico = Date.now().toString().slice(-8); 
+        
+        // Aseguramos que tome el prefijo CR si window.folioCotizacion está vacío, nulo o undefined
+        let folioTemporal = (window.folioCotizacion && window.folioCotizacion.trim() !== "") 
+                            ? window.folioCotizacion 
+                            : `CR${sufijoUnico}`;
+        
+        folioTemporal = String(folioTemporal).substring(0, 10);
+
+
+        tracker.step("Paso 2B: Guardando en base de datos local", { items: itemsParaGuardar.length, folio: folioTemporal });
+
+        const saveResp = await $.ajax({
+            url: `app/api/exiros.php?method=SaveCarrito${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                SessionID: sid,
+                hook: hookUrl, 
+                items: itemsParaGuardar,
+                FolioCotizacion: folioTemporal 
+            })
+        });
+        
+        // === NUEVA VALIDACIÓN ESTRICTA ===
+        if (!saveResp || saveResp.isError || (saveResp.data && typeof saveResp.data === 'object' && saveResp.data.status === 400)) {
+            let errorMsg = saveResp.message || "Error desconocido en el servidor al guardar el carrito.";
+            if (saveResp.data && saveResp.data.errors) {
+                errorMsg = JSON.stringify(saveResp.data.errors);
+            }
+            throw new Error(`Error en API Local (SaveCarrito): ${errorMsg}`);
+        }
+
+        const nuevoCarritoID = saveResp.data; 
+        
+        if (typeof nuevoCarritoID === 'object') {
+             throw new Error("El servidor devolvió un objeto en lugar de un ID de carrito válido.");
+        }
+
+        tracker.success("Carrito guardado localmente", { ID: nuevoCarritoID });
+
+        // PASO 3: Disparar a Exiros (GenerarOCI)
+        tracker.step("Paso 3: Disparando formulario OCI hacia el Hook");
+        
+        // === EL OTRO CAMBIO CLAVE ===
+        // Pasamos directamente el string 'hookUrl' al objeto para que GenerarOCI lo entienda
+        const orderData = {
+            hook: hookUrl, 
+            items: itemsParaGuardar
+        };
+
+        // LLAMADA CLAVE: Se le pasa el ID local para el CUST_FIELD2
+        GenerarOCI(orderData, nuevoCarritoID);
+        
+        tracker.success("Formulario OCI enviado. Saliendo del sitio...");
 
     } catch (err) {
-        console.error('Error:', err);
-        Swal.fire('Error', err.message, 'error');
+        tracker.error("Falla en el flujo de Compra Rápida", err.message);
+        Swal.fire("Error", err.message, "error");
         $btn.prop('disabled', false).html(originalHtml);
     }
 });
 
+// AÑADIDO: Recibe el segundo parámetro 'nuevoCarritoID'
+function GenerarOCI(orderData, nuevoCarritoID) {
+    const form = document.createElement("form")
+    form.method = "POST"
+    // Ensure standard URL-encoded POST for OCI
+    form.enctype = "application/x-www-form-urlencoded"
+    form.acceptCharset = "UTF-8"
+    form.target = "_blank";
+
+    const hookUrl =
+        (typeof orderData.hook === 'string' && orderData.hook) ||
+        (orderData.hook && typeof orderData.hook.browserFormPostUrl === 'string' && orderData.hook.browserFormPostUrl) ||
+        "";
+    form.action = hookUrl
+
+    const addHidden = (name, value) => {
+        const input = document.createElement("input")
+        input.type = "hidden"
+        input.name = name
+        input.value = value != null ? String(value) : ""
+        form.appendChild(input)
+    }
+
+    const addLongText = (name, text) => {
+        const ta = document.createElement("textarea")
+        ta.name = name
+        ta.style.display = "none"
+        ta.cols = 20
+        ta.value = text != null ? String(text) : ""
+        form.appendChild(ta)
+    }
+
+    (orderData.items || []).forEach((wrapper, idx) => {
+        const n = idx + 1
+        const item = (wrapper && wrapper.item) || {}
+
+        // OCI expects unit price in NEW_ITEM-PRICE; not total
+        const price = Number(item.unitPrice ?? item.itemPrice ?? 0)
+        const qty = Number(item.quantity ?? 0)
+        const matgrp = (item.category || "").trim().substring(0, 10)
+        const safeTrim = (v) => (v != null ? String(v).trim() : "")
+        const shortnm = safeTrim(item.shortname || "")
+        const longnm = safeTrim(item.longname || "")
+
+        // Build OCI attachment URL: clave from supplierPartID, img from codigoArticulo (with fallbacks)
+        const _claveForImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || "";
+        const _codigoForImg = item.codigoArticulo || item.codigoInterno || item.supplierPartAuxiliaryID || item.supplierPartID || "";
+        let _dynImgUrl = (_claveForImg && _codigoForImg)
+            ? `https://mersolsureste.com.mx/articulos/index.php?img=${encodeURIComponent(_codigoForImg)}`
+            : (item.imagen || "");
+        // Normalize any accidental breaks/spaces for tester RAW view
+        _dynImgUrl = _dynImgUrl.replace(/[\r\n]+/g, '&').replace(/\s*&\s*/g, '&').replace('?&', '?').replace(/&&+/g, '&').trim();
+        
+        addHidden(`NEW_ITEM-VENDORMAT[${n}]`, item.supplierPartAuxiliaryID)
+        addHidden(`NEW_ITEM-MATGROUP[${n}]`, matgrp)
+        addHidden(`NEW_ITEM-DESCRIPTION[${n}]`, shortnm)
+        addHidden(`NEW_ITEM-LANGUAGE[${n}]`, "ES")
+        addHidden(`NEW_ITEM-PRICE[${n}]`, price.toFixed(2))
+        addHidden(`NEW_ITEM-CURRENCY[${n}]`, item.currency)
+        addHidden(`NEW_ITEM-QUANTITY[${n}]`, qty)
+        addHidden(`NEW_ITEM-PRICEUNIT[${n}]`, item.priceUnit ?? 1)
+        addHidden(`NEW_ITEM-UNIT[${n}]`, item.unitOfMeasure)
+        addHidden(`NEW_ITEM-ATTACHMENT[${n}]`, _dynImgUrl)
+        addHidden(`NEW_ITEM-VENDOR[${n}]`, "108752")
+        // Manufacturer and custom fields
+        addHidden(`NEW_ITEM-MANUFACTCODE[${n}]`, item.manufacturer || '')
+        addHidden(`NEW_ITEM-MANUFACTMAT[${n}]`, item.codigoArticulo  || '')
+        
+        // CUST_FIELD1: max length 10 -> remove non-alphanumerics then clamp to 10
+        const _rawC1 = (item.manufacturerModelNumber || item.codigoArticulo || '');
+        const _sanC1 = _rawC1.replace(/[^A-Za-z0-9]/g, '');
+        const _clampC1 = _sanC1.substring(0, 10);
+        addHidden(`NEW_ITEM-CUST_FIELD1[${n}]`, _clampC1)
+        
+        // ==========================================
+        // AÑADIDO: VINCULAR EL ID DEL CARRITO (Auditoría)
+        // ==========================================
+        if (nuevoCarritoID) {
+            addHidden(`NEW_ITEM-CUST_FIELD2[${n}]`, nuevoCarritoID)
+        }
+
+        addHidden(`NEW_ITEM-URL[${n}]`, window.location.href)
+        // LONGTEXT (bracketless as requested), keep hidden input for tester visibility
+        addLongText(`NEW_ITEM-LONGTEXT_${n}:132[]`, longnm)
+    })
+
+    document.body.appendChild(form)
+
+    // Míralo en consola
+    console.log(form.outerHTML)
+
+    if (hookUrl) {
+        HTMLFormElement.prototype.submit.call(form)
+    }
+
+    return form
+}
 
 
 
@@ -651,6 +863,28 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch(err => console.error("Error cargando carrito existente:", err));
   }
+
+  const cotTrasferida = sessionStorage.getItem('transferencia_cotizacion');
+  if (cotTrasferida) {
+    try {
+      const items = JSON.parse(cotTrasferida);
+      if (Array.isArray(items) && items.length > 0) {
+        // Limpiamos el carrito actual y cargamos los nuevos
+        itemsCotizacion = items;
+        
+        // Refrescamos la tabla visual
+        listItems();
+        
+        // Limpiamos el storage para que no se repita al recargar la página
+        sessionStorage.removeItem('transferencia_cotizacion');
+        
+        console.log("Cotización cargada desde transferencia");
+      }
+    } catch (e) {
+      console.error("Error al procesar transferencia de cotización", e);
+    }
+  }
+
 });
 
 
@@ -731,6 +965,8 @@ function cargarCarritoExistente(carrito) {
   // Refresca la tabla en Compra Rápida
   listItems();
 }
+
+
 
 
 async function clonarCarritoComoNuevo(carritoAnterior) {

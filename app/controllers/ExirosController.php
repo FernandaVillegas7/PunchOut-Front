@@ -672,6 +672,7 @@ class ExirosController extends BaseController
             'cXMLResponse'       => (string)$cxmlResponse,
             'StatusResponse'     => (string)$statusResponse,
             'Items'              => $itemsOut,
+            'FolioCotizacion' => (string)($data['FolioCotizacion'] ?? $data['folioCotizacion'] ?? '')
         ];
 
         // 4) Enviar a endpoint remoto
