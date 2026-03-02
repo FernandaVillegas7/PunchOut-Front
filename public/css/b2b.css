@@ -133,3 +133,46 @@
     justify-content: center;
     text-align: center;
 }
+
+/* Estilo base del botón animado */
+.btn-animado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease; /* Suaviza el cambio de tamaño */
+    overflow: hidden; /* Asegura que el texto no se salga mientras se anima */
+}
+
+/* Estilo del texto oculto inicialmente */
+.btn-animado .btn-texto {
+    max-width: 0;          /* Ancho cero para ocultarlo */
+    opacity: 0;            /* Invisible */
+    margin-left: 0;
+    white-space: nowrap;   /* Evita que el texto se rompa en dos líneas */
+    transition: all 0.4s ease; /* La magia de la animación */
+    font-weight: 500;
+}
+
+/* Efecto HOVER: Cuando pasas el mouse por encima */
+.btn-animado:hover .btn-texto {
+    max-width: 100px;      /* Se abre espacio para el texto */
+    opacity: 1;            /* Se hace visible */
+    margin-left: 8px;      /* Un pequeño espacio entre el icono y el texto */
+}
+
+/* Opcional: Escala un poquito el botón para más énfasis */
+.btn-animado:hover {
+    transform: scale(1.05);
+}
+
+.hover-effect {
+        transition: all 0.3s ease;
+        cursor: default;
+    }
+    .hover-effect:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border-color: transparent !important;
+    }
+

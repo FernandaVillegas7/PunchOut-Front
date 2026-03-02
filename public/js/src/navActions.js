@@ -1,3 +1,8 @@
+if (!window.__NAV__) {
+window.__NAV__ = true;
+
+
+
 function registrarLogPagina() {
     // Obtener la URL actual
     const Valor = window.location.href;
@@ -30,11 +35,90 @@ function registrarLogPagina() {
         });
 }
 
+ 
 const instance = tippy('#soporte-btn', {
     content: '¿Problemas con la pagina? Envia tus quejas, sugerencias y dudas dando click aqui',
     placement: 'bottom',
     theme: 'light',
     animation: 'fade',
+});
+
+// 1. Preguntas Frecuentes
+tippy('#link-preguntas', {
+    content: 'Resuelve tus dudas frecuentes aquí',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+
+// 2. Inicio
+tippy('#link-inicio', {
+    content: 'Volver a la página principal',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+
+// 3. Tienda
+tippy('#link-tienda', {
+    content: 'Explora todo nuestro catálogo de productos',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+
+// 4. Compra Rápida
+tippy('#link-compra-rapida', {
+    content: 'Agrega múltiples productos por código rápidamente',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+
+// 5. Mis Compras
+tippy('#link-mis-compras', {
+    content: 'Con tu folio de cliente revisa tu historial de pedidos realizados',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+
+// 6. Cotizaciones
+tippy('#link-cotizaciones', {
+    content: 'Compra por medio de una cotización con tu codigo de cliente',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+
+// 7. Ayuda
+tippy('#link-ayuda', {
+    content: 'Contacta con soporte técnico',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+//Buscar
+tippy('#productSearchInput', {
+    content: 'Busca por código, nombre, palabra clave',
+    placement: 'bottom',
+    theme: 'light',
+    animation: 'fade',
+});
+//Preguntas
+tippy('#btnHelp', {
+    content: '¿Tienes dudas sobre como buscar? ¡Presióname!',
+    placement: 'bottom',
+    theme: 'gradient',
+    animation: 'shift-away',
+    onShow(instance) {
+        const box = instance.popper.querySelector('.tippy-box');
+
+        box.classList.remove('animate__animated', 'animate__tada');
+        void box.offsetWidth; // reset animation
+
+        box.classList.add('animate__animated', 'animate__tada');
+    }
 });
 
 instance[0].show();
@@ -91,6 +175,8 @@ window.updateCartBadge = function updateCartBadge(){
     });
 };
 
+
+
 // Kick off once jQuery is available (in case scripts load out of order)
 (function waitForJQ(){
     if (window.jQuery) {
@@ -100,3 +186,5 @@ window.updateCartBadge = function updateCartBadge(){
         setTimeout(waitForJQ, 250);
     }
 })();
+
+}

@@ -1,81 +1,89 @@
 <div class="container-fluid navbarTop sticky-top mb-3" style="padding: 0; margin: 0;">
     <div class="row align-items-center bg-light py-3 px-xl-5 d-none d-lg-flex">
-        <!-- Logo -->
         <div class="col-lg-4">
             <a href="index" class="text-decoration-none">
                 <img src="public/img/logo_merosol.png" alt="Logo" class="logo" style="height: 4rem;">
             </a>
         </div>
-        <!-- Información del cliente alineada a la derecha -->
         <div class="col-lg-8 text-end">
-            {# <p class="m-0">Bienvenido: {{ Nombre }}</p> #}
-			<p class="m-0">Bienvenido</p>
-			{# <p class="m-0">Lugar de entrega: {{ PlantaSeleccionadaNombre }}</p> #}
-			{# TODO: AGREGAR UN CONTECTO DINAMICO O FIJO, PERO QUE FUNCIONE #}
+            <p class="m-0 fw-bold">Bienvenido</p>
+            {# TODO: Agregar contexto dinámico del usuario aquí #}
         </div>
     </div>
 </div>
 
-<div class="container-fluid navActions bg-danger" style="position: relative; display: block; padding: 0; margin: 0; height: 3rem;">
-	<div class="row px-xl-5">
-		<div class="col-lg-3 d-none d-lg-block">&nbsp;</div>
+<div class="container-fluid navActions bg-danger" style="position: relative; display: block; padding: 0; margin: 0; min-height: 3rem;">
+    <div class="row px-xl-5">
+        
+        <div class="col-lg-3 d-none d-lg-block">&nbsp;</div>
 
-		<div class="col-lg-9">
-			<nav aria-label="??" class="navbar navbar-expand-lg bg-danger navbar-dark py-3 py-lg-0 px-0" style="height: 3rem; padding: 0 30px;">
-				<button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
-					<span class="navbar-toggler-icon"></span>
-				</button>
+        <div class="col-lg-9">
+            <nav aria-label="Navegación principal" class="navbar navbar-expand-lg navbar-dark bg-danger  navbar-custom">
+                
+                <button type="button" class="navbar-toggler m-2" data-toggle="collapse" data-target="#navbarCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-				<div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-					<div class="navbar-nav mr-auto py-0">
-						<a href="index" class="nav-item nav-link" id="link-inicio">Inicio</a>
-						<a href="shop" class="nav-item nav-link" id="link-tienda">Tienda</a>
-						<a href="cotizar" class="nav-item nav-link" id="link-tienda">Compra rápida</a>
-						<a href="misCompras" class="nav-item nav-link" id="link-tienda">Mis compras</a>
-						<a href="misCotizaciones" class="nav-item nav-link" id="link-tienda">Mis cotizaciones</a>
-					</div>
-
-					<!-- Botón de Logout -->
-					{# <div class="navbar-nav ms-auto py-0 d-flex align-items-center gap-3">
-						<select id="selectPlanta" class="form-select" style="width: 250px;">
-							<option value="" disabled selected>Selecciona lugar de entrega</option>
-						</select>
-					</div> #}
-				</div>
-
-				<div class="navbar-nav ms-auto py-0 d-none d-lg-flex align-items-center gap-3">
-					<a href="carrito" class="btn px-2 position-relative">
-						<i class="fas fa-shopping-cart text-light fs-5"></i>
-						<span id="TotalCarrito" class="badge bg-white text-black rounded-circle position-absolute top-0 start-100 translate-middle">
-							0
-						</span>
-					</a>
+                <div class="collapse navbar-collapse justify-content-between px-3" id="navbarCollapse">
+                    
+                    <div class="navbar-nav me-auto">
 					
-					<a href="form" class="btn px-2 mx-2" id="soporte-btn">
-						<i class="fas fa-headset text-light fs-5"></i>
-					</a>
+						<a href="preguntas" class="nav-item nav-link" id="link-preguntas">
+                            <i class="fa-brands fa-readme"></i> ¿Que hacer si...?
+                        </a>
 
-					{# TODO: RECUERDAME REDIRIGIR A LA SECCION DE PERFIL #}
-					{# <a href="perfil" class="btn px-2" id="perfil-btn">
-						<i class="fas fa-user text-light fs-5"></i>
-					</a> #}
+                        <a href="index" class="nav-item nav-link" id="link-inicio">
+                            <i class="fa fa-home me-1"></i> Inicio
+                        </a>
 
-					<!-- Botón de Logout movido aquí -->
-					<a href="logout.php" class="btn btn-danger text-white">
-						<i class="fas fa-sign-out-alt"></i>
-						Cerrar sesión
-					</a>
-				</div>
+                        <a href="shop" class="nav-item nav-link" id="link-tienda">
+                            <i class="fa fa-store me-1"></i> Tienda
+                        </a>
 
-			</nav>
-		</div>
-	</div>
-</div></div>
-{# {% block extraScripts %} #}
-{# <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="{{'public/js/src/navActions.js'|filemtime_version}}"></script> #}
-{# {% endblock %} #}
+                        <a href="cotizar" class="nav-item nav-link" id="link-compra-rapida">
+                            <i class="fa fa-bolt me-1"></i> Compra Rápida
+                        </a>
+
+                        <a href="misCompras" class="nav-item nav-link" id="link-mis-compras">
+                            <i class="fa fa-shopping-bag me-1"></i> Mis Compras
+                        </a>
+
+                        <a href="misCotizaciones" class="nav-item nav-link" id="link-cotizaciones">
+                            <i class="fa fa-file-invoice-dollar me-1"></i> Cotizaciones
+                        </a>
+
+                        <a href="#" class="nav-item nav-link" id="btn-start-tutorial">
+							<i class="fa-solid fa-play-circle me-1"></i> Tutorial
+						</a>
+                    </div>
+
+                    <hr class="d-lg-none border-light my-2 opacity-50">
+
+                    <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3 pb-3 pb-lg-0 mt-2 mt-lg-0">
+                        
+                        <a href="carrito" class="nav-item nav-link position-relative me-3 me-lg-2" title="Ver Carrito">
+                            <i class="fas fa-shopping-cart text-light fs-5"></i>
+                            <span id="TotalCarrito" class="badge bg-white text-dark rounded-circle position-absolute top-0 start-100 translate-middle shadow-sm" style="font-size: 0.75rem;">
+                                0
+                            </span>
+                        </a>
+                        
+                        <a href="form" class="nav-item nav-link me-3 me-lg-2" id="soporte-btn" title="Soporte Técnico">
+                            <i class="fas fa-headset text-light fs-5"></i>
+                        </a>
+
+                        <a href="logout.php" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3 rounded-pill">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="d-none d-md-inline">Salir</span>
+                            <span class="d-md-none">Cerrar Sesión</span>
+                        </a>
+                    </div>
+
+                </div>
+            </nav>
+        </div>
+    </div>
+</div>
 
 <script>
 // // Actualiza el badge del carrito usando jQuery $.ajax, la sesión se valida en el servidor
@@ -100,3 +108,5 @@
 // 	}
 // })();
 </script>
+
+

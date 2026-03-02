@@ -2,412 +2,6 @@
 
 {% block extraStyles %}
 
-<style type="text/css">
-    
-.zoom-img-wrapper {
-    overflow: hidden;      
-    position: relative;        
-    max-width: 16rem;  
-}
-
-.zoom-img {
-    width: 100%;          
-    transition: transform 0.3s ease;
-    object-fit: cover;
-    display: block;
-}
-
-.zoom-img-wrapper:hover .zoom-img {
-    transform: scale(2.2);
-}
-
-/* Select2 responsiveness and dropdown sizing */
-.select2-container { width: 100% !important; }
-.select2-dropdown { max-width: 100% !important; }
-.select2-results__options { max-height: 280px; overflow-y: auto; }
-
-/* ESTILOS PARA EL SIDEBAR */
-
-.offcanvas.offcanvas-end { width: 360px; }
-
-.flush-border-top > .list-group-item:first-child { border-top: 0; }
-
-@media (max-width: 991.98px) {
-  #drawerPedidos { width: 100%; }
-}
-
-.fab-pedidos {
-  position: fixed;
-  top: 10rem;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  cursor: pointer;
-}
-
-.fab-pedidos i {
-  font-size: 2rem;
-  color: #dc3545; 
-  transition: transform 0.2s, color 0.2s;
-}
-
-.fab-pedidos:hover i {
-  transform: scale(1.2);
-  color: #b02a37;
-}
-
-#offcanvasPedidos.offcanvas-end {
-  width: 30rem;
-  max-width: 100%; 
-}
-
-
-/* estilos para el buscador */
-/* ESTILOS PARA LA LISTA DE PRODUCTOS */
-.pedido-item {
-  border: 1px solid #eceff1;
-  border-radius: 14px;
-  padding: 12px;
-  margin: 10px 12px;
-  background: #fff;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-  list-style: none;
-}
-.pedido-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.06);
-  border-color: #e3e7eb;
-}
-
-.pedido-card {
-  display: grid;
-  grid-template-columns: 72px 1fr auto;
-  grid-gap: 12px;
-  align-items: center;
-}
-
-.pedido-thumb {
-  width: 72px; height: 72px;
-  border-radius: 12px;
-  object-fit: cover;
-  background: #f5f7f9;
-  border: 1px solid #eef1f4;
-}
-
-.pedido-title {
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.pedido-meta {
-  font-size: .82rem;
-  color: #6b7280;
-}
-
-.badge-status {
-  display: inline-flex; align-items: center; gap:6px;
-  font-size: .72rem;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-}
-.badge-ok   { background: #ecfdf5; color: #047857; border-color:#bbf7d0; }
-.badge-ship { background: #eff6ff; color: #1d4ed8; border-color:#bfdbfe; }
-.badge-pend { background: #fff7ed; color: #c2410c; border-color:#fed7aa; }
-
-.pedido-price {
-  font-weight: 700;
-  font-size: 1rem;
-  white-space: nowrap;
-  margin-bottom: 8px;
-  text-align: right;
-}
-
-.pedido-actions {
-  display: flex; gap: 8px; justify-content: flex-end;
-}
-.pedido-actions .btn {
-  padding: 6px 10px; border-radius: 10px;
-}
-
-@media (max-width: 480px) {
-  .pedido-card { grid-template-columns: 56px 1fr; }
-  .pedido-price, .pedido-actions { grid-column: 1 / -1; text-align: left; }
-}
-
-.select2-container { width: 100% !important; }
-
-#articulo.select2-hidden-accessible + .select2 .select2-selection--single {
-  height: 38px;
-  padding: .375rem .75rem;
-  border: 1px solid #ced4da;
-  border-radius: .375rem;
-}
-#articulo.select2-hidden-accessible + .select2 .select2-selection__rendered {
-  line-height: 38px;
-  padding-left: 0;
-}
-#articulo.select2-hidden-accessible + .select2 .select2-selection__arrow {
-  height: 38px;
-  right: .75rem;
-}
-
-.select2-container--default .select2-selection--single .select2-selection__placeholder { color: #6c757d; }
-.select2-container .select2-dropdown {
-  border-color: #ced4da;
-  border-radius: .375rem;
-}
-
-#sugerenciasContainer {
-    background: #ffffff;
-    border-radius: 1rem;
-    border: 1px solid #e5e7eb;
-}
-
-#sugerenciasContainer h5 {
-    font-weight: bold;
-}
-
-#sugerenciasGrid .card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-#sugerenciasGrid .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-}
-
-#sugerenciasGrid .card-img-top {
-    height: 180px;
-    object-fit: cover;
-    border-top-left-radius: 1rem;
-    border-top-right-radius: 1rem;
-}
-
-.section-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  margin-top: 0.5rem;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #343a40;
-}
-
-.section-divider::before,
-.section-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #ccc;
-  margin: 0 1rem;
-
-  
-}
-
-.ribbon-wrapper {
-  width: 100px;
-  height: 100px;
-  overflow: hidden;
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  z-index: 1;
-}
-.ribbon {
-  font: bold 12px sans-serif;
-  color: #fff;
-  text-align: center;
-  line-height: 20px;
-  transform: rotate(45deg);
-  position: relative;
-  top: 25px;
-  left: -25px;
-  width: 150px;
-  background: #D2242a;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  letter-spacing: 0.5px;
-}
-
-.ribbon::before,
-.ribbon::after {
-  content: "";
-  border-top: 3px solid #D2242a;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  position: absolute;
-  bottom: -3px;
-}
-
-.ribbon::before {
-  left: 0;
-}
-
-.ribbon::after {
-  right: 0;
-}
-
-/* ===== CARD BASE ===== */
-
-
-.wrapper{
-  width:200px;
-  min-height:240px;              /* alto estable */
-  background:#fff;
-  position:relative;
-  overflow:hidden;
-  border-radius:10px;
-  transform:scale(.95);
-  transition:box-shadow .35s, transform .35s;
-  box-shadow:0 8px 18px rgba(0,0,0,.08);
-  margin: 0 !important;
-}
-.wrapper:hover{ transform:scale(1); box-shadow:0 14px 30px rgba(0,0,0,.12); }
-
-
-/* Override del .container de Bootstrap solo dentro de la card */
-.wrapper > .container{
-  width:100%!important;
-  max-width:100%!important;
-  padding:0!important;
-  margin:0!important;
-  height:100%;
-  display:flex;
-  flex-direction:column;         /* columna estable */
-  min-height:0;                  /* permite encogerse sin romper */
-  box-sizing:border-box;
-}
-
-/* Imagen superior */
-.top{
-  flex:1 1 auto;                 /* ocupa el resto disponible */
-  min-height:220px;              /* piso visual para evitar colapso */
-  background-size:cover!important;
-  background-position:center;
-}
-
-/* Panel inferior (slide) */
-.bottom{
-  flex:0 0 108px;                /* altura fija del panel inferior */
-  display:flex;
-  width:200%;                    /* 2 vistas: izquierda/derecha */
-  transition:transform .45s ease;
-  overflow:hidden;
-}
-.bottom.clicked{ transform:translateX(-50%); }
-
-/* Mitades del panel */
-.left,.right{
-  flex:0 0 50%;
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 12px;
-}
-.left{ background: #f4f4f4; }
-.right{
-  background: #D2242a;
-  color:#fff;
-  flex-direction:column;
-  justify-content:center;
-}
-
-/* Texto (no debe empujar al ícono) */
-.details{
-  width: 100px;
-  flex:0 0 100;
-  min-width:0;                   /* clave para que no empuje al icono */
-  padding:10px 8px 10px 0;
-}
-.details h1{
-  margin:0 0 4px;
-  font-size:1rem;
-  line-height:1.2;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.details p{ margin:0; color:#6b7280; font-weight:600; }
-
-/* Acciones (íconos) */
-.buy,.done,.remove{
-  flex:0 0 56px;                 /* ancho fijo del área del icono */
-  align-self:stretch;            /* ocupa toda la altura del panel */
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer;
-}
-.buy{ background: #f1f1f1; border-left:1px solid rgba(0,0,0,.1); }
-.buy:hover{ background: #676f71ff; }
-.buy .material-icons,
-.done .material-icons,
-.remove .material-icons{
-  font-size:24px; line-height:1; display:block;
-}
-.buy .material-icons{ color: #254053; transition:transform .25s,color .25s; }
-.buy:hover .material-icons{ transform:translateY(2px); color: #00394B; }
-
-.remove{ background: #BC3B59; border-right:1px solid rgba(255,255,255,.35); }
-.remove:hover{ background: #9B2847; }
-
-/* Esquina interior desplegable (badge/info) */
-.inside{
-  z-index:9; background: #D2242a;
-  width:140px; height:140px;
-  position:absolute; top:-70px; right:-70px;
-  border-radius:0 0 200px 200px;
-  transition:all .5s, border-radius 2s, top 1s;
-  overflow:hidden;
-}
-.wrapper:hover .inside{
-  width:100%; right:0; top:0; border-radius:0; height:70%;
-}
-.inside .icon{
-  position:absolute; right:85px; top:85px;
-  color:#fff; opacity:1; transition:all .5s;
-  font-weight:700; font-size:.8rem;
-}
-.wrapper:hover .inside .icon{ opacity:0; right:15px; top:15px; }
-
-.contents{
-  padding:5%;
-  opacity:0;
-  transform:scale(.5) translateY(-200%);
-  transition:opacity .2s, transform .8s;
-}
-.wrapper:hover .contents{ opacity:1; transform:scale(1) translateY(0); }
-.contents h4,.contents p,.contents table{ color: #fff; }
-.contents p{ font-size:7px; }
-
-/* Fallback por si Material Icons tarda en cargar */
-.material-icons{
-  font-family:'Material Icons';
-  font-weight:normal; font-style:normal;
-  display:inline-block; line-height:1;
-  text-transform:none; letter-spacing:normal;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
-
-.contents table th {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-}
-
-.contents table td {
-  font-size: 0.95rem;
-  color: #eee;
-}
-
-#sugerenciasGrid.d-flex{ gap:16px; flex-wrap:wrap; }
-</style>
-
 {% endblock %}
 
 {% block pageContent %}  
@@ -427,15 +21,19 @@
 <div class="container-fluid pb-5">
     <div class="row px-xl-5">
         <div class="col-md-8">
-            <div class="card">
+            <div class="card" id="rapida">
                 <div class="card-body">
                     <form id="frmArticulos">
                         <div class="row g-3">
+                        <h3 class="fw-bold text-dark">Compra rápida</h3>
+                            <h5 class="text-secondary fs-6">
+                                Agrega productos por código o descripción rápidamente, en un solo lugar
+                            </h5>
                             <div class="col-12 col-md-8">
-                                <div class="form-group">
+                                <div class="form-group" id="seleccion">
                                     <label for="articulo">Articulo</label>
                                     <select class="form-select " name="articulo" id="articulo">
-                                        <option value="-1">- Articulos -</option>
+                                        <option value="-1"> Busca por código, nombre, descripción -</option>
                                     </select>
                                 </div>
                             </div>
@@ -485,7 +83,7 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card mb-4">
+            <div class="card mb-4" id="resumen">
                 <div class="card-body">
                     <h5 class="section-title position-relative text-uppercase mb-3">
                         <span class="pr-3">Resumen</span>
@@ -573,7 +171,11 @@
 
 {% block extraScripts %}
 {{ parent() }}
+
+
+
 <script>
+
 // Validación global de sesión para PunchOut/OCI en Compra Rápida
 (function () {
     var ERROR_URL = 'https://exiros.mersolsureste.com.mx/errors/401';
@@ -618,7 +220,10 @@
         window.location.replace(ERROR_URL);
     }
 })();
+
 </script>
+<link rel="stylesheet" href="public/css/cotizar.css">
 <script src="{{'public/js/src/CompraRapida.js'|filemtime_version}}"></script>
 <script src="{{'public/js/src/b2bProducts.js'|filemtime_version}}"></script>
+<script src="public/js/src/tutorial.js"></script>
 {% endblock %}

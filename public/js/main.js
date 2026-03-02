@@ -16,6 +16,12 @@
         }
         toggleNavbarMethod();
         $(window).resize(toggleNavbarMethod);
+
+        $('[data-toggle="tooltip"]').tooltip({
+            boundary: 'window',
+            template: '<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner text-uppercase font-weight-bold"></div></div>' // Opcional: añade estilos extra si quieres
+        });
+    
     });
     
     

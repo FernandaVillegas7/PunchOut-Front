@@ -23,8 +23,8 @@
     {# Filtros (decorativos por ahora) #}
     <form class="row g-2 align-items-end mb-3">
       <div class="col-6 col-md-10">
-        <label class="form-label">Clave</label>
-        <input type="text" id="claveC" class="form-control" placeholder="Ingresa tu clave de cotización">
+        <label class="form-label">Folio cliente</label>
+        <input type="text" id="claveC" class="form-control" placeholder="Ingresa tu fólio de cliente">
       </div>
       {# <div class="col-6 col-md-2">
         <label class="form-label d-none">Desde</label>
@@ -52,7 +52,7 @@
     {# Contenedor donde se pintará el acordeón #}
     {# <div id="comprasRoot" data-api="/B2B-EXIROS-FRONT/app/api/cotizacionCRM.php" data-cliente=""> #}
     <div id="comprasRoot" data-api="/app/api/cotizacionCRM.php" data-cliente="">
-      <div class="text-center text-muted py-5 skeleton">Cargando compras…</div>
+      <div class="text-center text-muted py-5 skeleton">¿Quieres saber como funciona? ¡Presiona "tutorial" en la bara de navegación!</div>
     </div>
 
   </div>
@@ -62,4 +62,7 @@
 {% block extraScripts %}
 {{ parent() }}
 <script src="{{ 'public/js/src/MisCotizaciones.js' | filemtime_version }}"></script>
+
+<script src="public/js/src/tutorial.js"></script>
+
 {% endblock %}

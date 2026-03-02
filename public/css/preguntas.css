@@ -1,0 +1,14 @@
+.custom-accordion .accordion-button {
+    border-radius: 12px;
+    background: #fff;
+}
+
+.custom-accordion .accordion-button:not(.collapsed) {
+    background: #f8f9ff;
+    color: var(--primary);
+}
+
+.custom-accordion .accordion-body {
+    background: #fff;
+    border-top: 1px solid #eee;
+}

@@ -1,3 +1,5 @@
+if (!window.__MERSOLSUR__) {
+window.__MERSOLSUR__ = true;
 
 const swalTitle = "Mersol Sureste"
 
@@ -15,3 +17,8 @@ function commonErrorMsg(msg, isWarning = false){
 }
 
 
+
+
+// resto del código
+
+}

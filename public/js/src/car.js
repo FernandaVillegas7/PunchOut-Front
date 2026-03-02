@@ -1,3 +1,6 @@
+if (!window.__CAR__) {
+window.__CAR__ = true;
+
 
 const apiCar = 'api/carrito/'
 
@@ -92,6 +95,10 @@ $('.btEdit').on('click', function(e){
     $(`.driveRush${itemID}`).show()
     
 })
+
+
+
+}
 
 // $('#tbListItems').on('click','.dropItem', function(e){
 //     e.preventDefault()

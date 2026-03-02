@@ -1,4 +1,7 @@
 // Parámetros de paginación y búsqueda
+if (!window.__B2B_PRODUCTS__) {
+window.__B2B_PRODUCTS__ = true;
+
 const pageSize = 50;
 let currentPage = 1;
 let loading = false;
@@ -533,3 +536,5 @@ style.innerHTML = `
     }
 `;
 document.head.appendChild(style);
+
+ }
