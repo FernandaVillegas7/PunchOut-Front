@@ -1,0 +1,182 @@
+
+    /* ========================================================== */
+    /* 1. ESTILOS DE DISEÑO MODERNO Y LIMPIO                      */
+    /* ========================================================== */
+    :root {
+        --b2b-primary: #e31e24; /* El rojo de tu marca, usado como acento */
+        --b2b-bg-light: #f8f9fa;
+        --b2b-border-color: #e9ecef;
+        --b2b-text-main: #343a40;
+        --b2b-text-muted: #6c757d;
+    }
+
+    body {
+        color: var(--b2b-text-main);
+        background-color: #fff;
+    }
+
+    /* Diseño responsivo: 5 productos por fila en escritorio, 2 en móvil */
+    .row.gap-sm { gap: 15px; }
+    @media (min-width: 992px) {
+        .col-quinto {
+            flex: 0 0 20% !important;
+            max-width: 20% !important;
+        }
+    }
+    @media (max-width: 576px) {
+        .col-quinto {
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+        }
+    }
+
+    /* Imagen del producto: limpia y centrada con recorte inteligente */
+    .product-img-container {
+        padding: 1.5rem;
+        background-color: var(--b2b-bg-light);
+        border: 1px solid var(--b2b-border-color);
+        text-align: center;
+        border-radius: 8px;
+    }
+    .product-img-container img {
+        aspect-ratio: 1/1;
+        object-fit: contain;
+        max-height: 400px;
+    }
+
+    /* Información del producto: tipografía nítida y jerarquía clara */
+    .product-info-box {
+        padding: 2rem;
+        background-color: #fff;
+    }
+    .product-info-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    .product-info-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--b2b-primary);
+        margin-bottom: 1.5rem;
+    }
+    .product-info-code {
+        font-size: 0.9rem;
+        color: var(--b2b-text-muted);
+        margin-bottom: 2rem;
+    }
+
+    /* Botón agregar al carrito: moderno, redondeado y con efecto hover */
+    .btn-b2b-cart {
+        background-color: var(--b2b-primary);
+        color: #fff;
+        font-weight: 700;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        border: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+    .btn-b2b-cart:hover {
+        background-color: #c41920;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(227, 30, 36, 0.3);
+    }
+
+    /* Control de cantidad: más limpio y centrado */
+    .b2b-quantity-input {
+        border: 1px solid var(--b2b-border-color);
+        border-radius: 50px;
+        overflow: hidden;
+    }
+    .b2b-quantity-input .btn {
+        border: none;
+        color: var(--b2b-text-muted);
+        padding: 0.75rem 1rem;
+    }
+    .b2b-quantity-input .form-control {
+        border: none;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    /* ========================================================== */
+    /* 2. DISEÑO MODERNO DE SECCIONES REVELABLES (LA MAGIA)      */
+    /* ========================================================== */
+    
+    /* Contenedor de la sección completa */
+    .b2b-details-section {
+        border-top: 1px solid var(--b2b-border-color);
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    /* Cabecera de la sección (Título + Botón de Control) */
+    .b2b-details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        cursor: pointer;
+    }
+    .b2b-details-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--b2b-text-main);
+    }
+    .b2b-details-title i {
+        color: var(--b2b-primary);
+        margin-right: 0.75rem;
+    }
+
+    /* Botón de control: Minimalista, solo el icono que gira */
+    .btn-b2b-trigger {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--b2b-text-muted);
+        font-size: 1rem;
+        transition: transform 0.3s ease-in-out;
+        transform-origin: center;
+    }
+    /* Gira la flecha cuando la sección está abierta */
+    .btn-b2b-trigger:not(.collapsed) {
+        transform: rotate(180deg);
+        color: var(--b2b-primary);
+    }
+
+    /* El contenido que se revela: Fondo blanco limpio */
+    .b2b-details-content {
+        display: none; /* Oculto por defecto, JS lo controla */
+        padding-top: 1rem;
+        color: var(--b2b-text-muted);
+        line-height: 1.7;
+    }
+    
+    /* Estilos para la tabla de especificaciones dentro del contenido */
+    .table-specifications {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    .table-specifications th {
+        font-weight: 600;
+        background-color: var(--b2b-bg-light);
+        color: var(--b2b-text-main);
+        width: 40%;
+    }
+    .table-specifications td {
+        background-color: #fff;
+        color: var(--b2b-text-muted);
+    }
+
+/* Estado de éxito para el botón (Agregado al carrito) */
+    .btn-b2b-cart.is-success {
+        background-color: #28a745 !important; /* Verde de éxito */
+        color: #fff !important;
+        transform: translateY(0);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        pointer-events: none; /* Evita que le den doble clic mientras está verde */
+    }

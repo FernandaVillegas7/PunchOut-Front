@@ -21,3 +21,4 @@ items.AddCar.on('click', function(e){
 
     setCarItem()
 })
+

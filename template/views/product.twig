@@ -1,6 +1,7 @@
 {% extends "layouts/base.twig" %}
 
 {% block pageContent %}
+
 <div class="container-fluid">
     <div class="row px-xl-5">
         <div class="col-12">
@@ -15,85 +16,162 @@
 
 <div class="container-fluid pb-5">
     <div class="row px-xl-5">
-        <div class="col-lg-5 mb-30">
-            <div id="product-details" class="carousel slide" data-ride="carousel">
-                <div class="prduct-details">
-                    <img id="product-img" class="img-fluid w-100" src="" alt="" style="aspect-ratio: 1/1;">
+        
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-lg-5 mb-30">
+                    <div class="product-img-container shadow-sm">
+                        <img id="product-img" class="img-fluid" src="" alt="">
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-7 h-auto mb-30">
-            <div class="h-100 p-30">
-                <h3>
-                    <span id="product-longName"></span> - <span id="product-manufacturer"></span>
-                </h3>
-                <h3 class="font-weight-semi-bold mb-4">
-                    $<span id="product-amount"></span> <span id="product-currency"></span>
-                </h3>
-                <p>
-                    <span id="product-shortName"></span>
-                    <br>
-                    <small>Código: <span id="product-codigoInterno"></span></small>
-                </p>
+                <div class="col-lg-7 h-auto mb-30">
+                    <div class="product-info-box border rounded shadow-sm h-100">
+                        <div class="product-info-title">
+                            <span id="product-longName"></span>
+                        </div>
+                        <div class="product-info-price">
+                            $<span id="product-amount"></span> <span id="product-currency"></span>
+                        </div>
+                        <div class="product-info-code pb-2 border-bottom">
+                            Fabricante: <strong><span id="product-manufacturer"></span></strong> | Código: <strong><span id="product-codigoInterno"></span></strong>
+                        </div>
 
-                <form id="frmProducto">
-                    <input type="hidden" name="codigo" id="input-codigo">
-                    <input type="hidden" name="nombre" id="input-nombre">
-                    <input type="hidden" name="precio" id="input-precio">
-                    <input type="hidden" name="articulo" id="input-articulo">
-
-                    <div class="d-flex align-items-center mb-4 pt-2">
-                        <div class="row">
-                            <div class="col-md-4 quantity">
-                                <div class="input-group mb-3 pt-2">
-                                    <button class="btn btn-outline-danger btn-minus" type="button" id="button-addon1">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
-                                    <input type="text" name="totalProducto" id="totalProducto" class="form-control text-center" placeholder="" aria-label="Cantidad" value="1" aria-describedby="button-addon1">
-                                    <button class="btn btn-outline-danger btn-plus" type="button" id="button-addon2">
-                                        <i class="fa fa-plus"></i>
+                        <form id="frmProducto" class="mt-4 pt-2">
+                            <input type="hidden" name="codigo" id="input-codigo" value="">
+                            <input type="hidden" name="nombre" id="input-nombre" value="">
+                            <input type="hidden" name="precio" id="input-precio" value="">
+                            <input type="hidden" name="articulo" id="input-articulo" value="">
+                    
+                            <div class="row w-100 align-items-center">
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <div class="input-group b2b-quantity-input">
+                                        <button class="btn btn-minus" type="button">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                        <input type="text" name="totalProducto" id="totalProducto" class="form-control" value="1">
+                                        <button class="btn btn-plus" type="button">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <button class="btn-b2b-cart" id="btAddCar">
+                                        <i class="fas fa-cart-plus mr-3"></i> Agregar al carrito
                                     </button>
                                 </div>
                             </div>
+                        </form>
 
-                            <div class="col-md-8">
-                                <button class="btn btn-danger px-3 ml-4" id="btAddCar">
-                                    <i class="fas fa-cart-plus "></i>
-                                    Agregar al carrito
+                        <div class="b2b-details-section mt-5 pt-4">
+                            <div class="b2b-details-header" data-target="#content-detalles">
+                                <div class="b2b-details-title">
+                                    <i class="fas fa-list-ul"></i> Detalles del Producto
+                                </div>
+                                <button class="btn-b2b-trigger" id="trigger-detalles" type="button">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div id="content-detalles" class="b2b-details-content bg-white p-3 rounded border shadow-sm">
+                                <h6 class="mb-3">
+                                    <span id="product-manufacturer-2"></span>
+                                </h6>
+                                <p class="text-muted mb-0"><span id="product-shortName-2"></span></p>
+                                <div id="product-stock-status" class="mb-3">
+    </div>
+                            </div>
+                        </div>
+
+                        <div class="b2b-details-section">
+                            <div class="b2b-details-header" data-target="#content-especificaciones">
+                                <div class="b2b-details-title">
+                                    <i class="fas fa-cogs"></i> Especificaciones Técnicas
+                                </div>
+                                <button class="btn-b2b-trigger collapsed" id="trigger-especificaciones" type="button">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div id="content-especificaciones" class="b2b-details-content p-0 rounded border shadow-sm">
+                                <table class="table table-striped table-bordered table-specifications mb-0">
+                                    <tbody id="tabla-especificaciones">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="b2b-details-section" id="caja-seccion-similares" style="display:none;">
+                            <div class="b2b-details-header" data-target="#seccion-equivalentes">
+                                <div class="b2b-details-title">
+                                    <i class="fas fa-layer-group"></i> Artículos similares
+                                </div>
+                                <button class="btn-b2b-trigger collapsed" id="trigger-similares" type="button">
+                                    <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </form>
 
-                <div class="mt-4">
-                    <div class="nav nav-tabs mb-4 text-white">
-                        <a class="nav-item nav-link  active border " data-toggle="tab" href="#tab-pane-1">
-                            Detalles
-                        </a>
-                    </div>
-
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="tab-pane-1">
-                            <h4 class="mb-3">
-                                <span id="product-longName-2"></span> - <span id="product-manufacturer-2"></span>
-                            </h4>
-                            <p>
-                                <span id="product-shortName-2"></span>
-                            </p>
+                        <div class="b2b-details-section" id="caja-seccion-complementarios" style="display:none;">
+                            <div class="b2b-details-header" data-target="#seccion-complementarios">
+                                <div class="b2b-details-title">
+                                    <i class="fas fa-handshake"></i> Comprados juntos
+                                </div>
+                                <button class="btn-b2b-trigger collapsed" id="trigger-complementarios" type="button">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="tab-pane fade" id="tab-pane-3"></div>
-                    </div>
+                        </div>
                 </div>
-
             </div>
         </div>
+
+        <div class="col-lg-3 mb-30" id="seccion-complementarios" style="display:none;">
+    
+    <div class="d-flex align-items-center mb-4 pb-2" style="border-bottom: 2px solid #eaeaea;">
+        <div style="background: linear-gradient(135deg, #d2242a 0%, #403B33 100%); width: 4px; height: 24px; border-radius: 4px; margin-right: 12px;"></div>
+        
+        <h5 class="mb-0 font-weight-bold" style="color: #3D464D; letter-spacing: 0.3px; font-size: 1.1rem;">
+            Comprados juntos
+        </h5>
+        
+        <span class="badge ml-auto" style="background-color: #ffffff; color: #5c508a; font-size: 0.7rem; padding: 0.4em 0.6em; border-radius: 20px; font-weight: 600;">
+            <i class="fas fa-plus" style="font-size: 0.6rem;"></i>
+        </span>
     </div>
+
+    <div id="contenedor-complementarios" class="d-flex flex-column">
+        </div>
+    
+</div>
+
+    </div>
+
+    <div class="row mt-5" id="seccion-equivalentes" style="display:none;">
+    <div class="col-12 px-xl-5 pt-4">
+        
+        <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 2px solid #eaeaea;">
+            <div style="background: linear-gradient(135deg, #d2242a 0%, #403B33 100%); width: 5px; height: 28px; border-radius: 4px; margin-right: 15px;"></div>
+            
+            <h4 class="mb-0 font-weight-bold" style="color: #000000; letter-spacing: 0.3px;">
+                Opciones y Equivalentes
+            </h4>
+            
+            <span class="badge ml-3" style="background-color: #f0ebeb; color: #5c508a; font-size: 0.75rem; padding: 0.5em 0.8em; border-radius: 20px; font-weight: 600;">
+                <i class="fas fa-star mr-1" style="font-size: 0.65rem;"></i> Recomendados
+            </span>
+        </div>
+        
+        <div class="row gap-sm justify-content-center" id="contenedor-equivalentes">
+            </div>
+        
+    </div>
+</div>
+
 </div>
 {% endblock %}
 
 {% block extraScripts %}
     {{ parent() }}
     <script src="{{'public/js/src/producto.js'|filemtime_version}}"></script>
+    <link rel="stylesheet" href="public\css\product.css">
 {% endblock %}

@@ -5,13 +5,74 @@
 {# TODO: ESTE NO ES EL LUGAR QUE BUSCAS, LA PLANTILLA QUE SE ENCARGA DE RENDERIZAR PRODUCTO ES productContent.twig #}
 <div class="container-fluid">
     <div class="row px-xl-5">
-        <div class="col-12">
-            <nav class="breadcrumb bg-light mb-30">
-                <a class="breadcrumb-item text-dark" href="index">Inicio</a>
-                <a class="breadcrumb-item text-dark" href="shop">Tienda</a>
-                <span class="breadcrumb-item active">Detalles del producto</span>
-            </nav>
+        <div class="container-fluid pb-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-lg-5 mb-30">
+                    <div id="product-details" class="carousel slide" data-ride="carousel">
+                        <div class="prduct-details">
+                            <img class="img-fluid w-100" src="{{pictures[0].url}}" alt="" style="aspect-ratio: 1/1;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7 h-auto mb-30">
+                    <div class="h-100 p-30">
+                        <h3>{{articulo}} - {{brand}}</h3>
+                        <h3 class="font-weight-semi-bold mb-4">${{priceData.salePrice}} {{priceData.currencyIso}}</h3>
+                        <p>{{description}}<br><small>Codigo: {{code}}</small></p>
+
+                        <form id="frmProducto">
+                            <input type="hidden" name="codigo" value="{{code}}">
+                            <input type="hidden" name="nombre" value="{{name}}">
+                            <input type="hidden" name="precio" value="{{priceData.salePrice}}">
+                            <input type="hidden" name="articulo" value="{{articulo}}">
+                    
+                            <div class="d-flex align-items-center mb-4 pt-2">
+                                <div class="row">
+                                    <div class="col-md-4 quantity">
+                                        <div class="input-group mb-3 pt-2">
+                                            <button class="btn btn-outline-danger btn-minus" type="button" id="button-addon1">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                            <input type="text" name="totalProducto" id="totalProducto" class="form-control text-center" value="1" aria-describedby="button-addon1">
+                                            <button class="btn btn-outline-danger btn-plus" type="button" id="button-addon2">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <button class="btn btn-danger px-3 ml-4" id="btAddCar">
+                                            <i class="fas fa-cart-plus "></i> Agregar al carrito
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="mt-4">
+                            </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <div class="col-lg-3 mb-30" id="seccion-complementarios" style="display:none;">
+            <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3" style="font-size: 1rem;">Comprados juntos</span></h5>
+            <div id="contenedor-complementarios" class="d-flex flex-column gap-3">
+                </div>
+        </div>
+    </div>
+
+    <div class="row px-xl-5 mt-5" id="seccion-equivalentes" style="display:none;">
+        <div class="col-12">
+            <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">Opciones del Giro / Equivalentes</span></h5>
+            <div class="row" id="contenedor-equivalentes">
+                </div>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 

@@ -108,6 +108,30 @@ try {
             }
             break;
 
+        case 'ExirosSugerencias':
+            $data = [
+                'articulo' => $_GET['articulo'] ?? '',
+                'top' => $_GET['top'] ?? 5
+            ];
+            $sugerencias = $controller->ExirosSugerencias($data);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($sugerencias);
+            exit;
+            break;
+
+        case 'ExirosStock':
+            if ($requestMethod === 'GET') {
+               
+                $articulo = $_GET['articulo'] ?? '';
+                
+                $result = $controller->ExirosStock($articulo);
+                
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode($result);
+                exit;
+            }
+            break;
+
         case 'ExirosProductDetail':
             // Recoge los parámetros del request
             $data = [

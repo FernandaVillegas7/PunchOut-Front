@@ -790,4 +790,89 @@ class ExirosController extends BaseController
             'data'    => $decodedResponse['data'] ?? null
         ];
     }
+   
+    public function ExirosSugerencias($data)
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+        
+        // TODO: VALIDAR SESION, NO OLVIDAR
+        // $sessionID = $_SESSION['SessionID'] ?? null;
+        // if (empty($sessionID)) {
+        //     $this->setResponse(true, HTTP_UNAUTHORIZED, 'SessionID de PunchOut no válido o no encontrado')->showResponse();
+        // }
+
+        $routes = $this->getApiRutes();
+        $apiKey = $this->getXApiKey();
+        
+        try {
+            // Mandamos llamar a 'exiros-sugerencias' y le pasamos el arreglo $data
+            // que contiene ['articulo' => 'FETU-002258', 'top' => 4]
+            $response = callApi('exiros-sugerencias', $data, [
+                'routes' => $routes,
+                'apiKey' => $apiKey,
+                'method' => 'GET' 
+            ]);
+        } catch (\Exception $e) {
+            $this->setResponse(true, HTTP_INTERNAL_SERVER_ERROR, $e->getMessage())->showResponse();
+        }
+
+        $decodedResponse = json_decode($response, true);
+
+        if (isset($decodedResponse['isError']) && $decodedResponse['isError']) {
+            $this->setResponse(true, HTTP_BAD_REQUEST, $decodedResponse['message'] ?? 'Error al obtener las sugerencias')->showResponse();
+        }
+
+        return [
+            'isError' => false,
+            'message' => $decodedResponse['message'] ?? '',
+            'data'    => $decodedResponse['data'] ?? [] // Retornamos un arreglo vacío si no hay sugerencias
+        ];
+    }
+    
+    public function ExirosStock($articulo)
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+        
+        // TODO: VALIDAR SESION, NO OLVIDAR (Manteniendo tus estándares actuales)
+        // $sessionID = $_SESSION['SessionID'] ?? null;
+        // if (empty($sessionID)) {
+        //     $this->setResponse(true, HTTP_UNAUTHORIZED, 'SessionID de PunchOut no válido o no encontrado')->showResponse();
+        // }
+
+        $routes = $this->getApiRutes();
+        $apiKey = $this->getXApiKey();
+        
+        try {
+            // Nota de Arquitectura: El front envía '$articulo', 
+            // pero lo empaquetamos como 'codigoInterno' porque así lo exige tu endpoint de C#
+            $data = ['codigoInterno' => $articulo];
+            
+            // Usamos tu helper con un alias para la ruta ('exiros-stock')
+            $response = callApi('exiros-stock', $data, [
+                'routes' => $routes,
+                'apiKey' => $apiKey,
+                'method' => 'GET' 
+            ]);
+        } catch (\Exception $e) {
+            $this->setResponse(true, HTTP_INTERNAL_SERVER_ERROR, $e->getMessage())->showResponse();
+        }
+
+        $decodedResponse = json_decode($response, true);
+
+        if (isset($decodedResponse['isError']) && $decodedResponse['isError']) {
+            $this->setResponse(true, HTTP_BAD_REQUEST, $decodedResponse['message'] ?? 'Error al obtener el inventario')->showResponse();
+        }
+
+        return [
+            'isError' => false,
+            'message' => $decodedResponse['message'] ?? 'Consulta de stock exitosa',
+            // Si por alguna razón la data viene vacía, retornamos null de forma segura
+            'data'    => $decodedResponse['data'] ?? null 
+        ];
+    }
 }
+
