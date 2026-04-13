@@ -33,7 +33,7 @@
     /* Imagen del producto: limpia y centrada con recorte inteligente */
     .product-img-container {
         padding: 1.5rem;
-        background-color: var(--b2b-bg-light);
+        background-color: #ffffff;
         border: 1px solid var(--b2b-border-color);
         text-align: center;
         border-radius: 8px;
@@ -157,20 +157,36 @@
     }
     
     /* Estilos para la tabla de especificaciones dentro del contenido */
-    .table-specifications {
-        margin: 0;
-        font-size: 0.95rem;
-    }
-    .table-specifications th {
-        font-weight: 600;
-        background-color: var(--b2b-bg-light);
-        color: var(--b2b-text-main);
-        width: 40%;
-    }
-    .table-specifications td {
-        background-color: #fff;
-        color: var(--b2b-text-muted);
-    }
+
+.table-specifications {
+    margin: 0;
+    font-size: 0.95rem;
+    width: 100%;
+    border-collapse: hidden;
+    border-radius: 8px; /* Bordes redondeados modernos */
+    overflow: hidden; /* Asegura que las esquinas se vean redondas */
+}
+
+/* Colorea las filas pares automáticamente usando tu variable de fondo claro */
+.table-specifications tr:nth-child(even) {
+    background-color: var(--b2b-bg-light);
+}
+
+.table-specifications th, 
+.table-specifications td {
+    padding: 0.8rem 1rem;
+    border: none; /* Quitamos bordes porque el color de fondo separa visualmente */
+}
+
+.table-specifications th {
+    font-weight: 600;
+    color: var(--b2b-text-main);
+    width: 40%;
+}
+
+.table-specifications td {
+    color: var(--b2b-text-muted);
+}
 
 /* Estado de éxito para el botón (Agregado al carrito) */
     .btn-b2b-cart.is-success {
@@ -180,3 +196,77 @@
         box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
         pointer-events: none; /* Evita que le den doble clic mientras está verde */
     }
+
+    /* Animación de pulso para la etiqueta de promo (tipo Temu) */
+@keyframes pulse-promo {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 5px rgba(220, 53, 69, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+/* Color de fondo sutil para la fila resaltada */
+.table-warning-bg {
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+
+/* ========================================================== */
+/* 3. ESTILOS DE PREVIEW (VER MÁS / VER MENOS)                */
+/* ========================================================== */
+
+.product-description-text {
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    color: var(--b2b-text-muted); /* Reutilizando tus variables */
+}
+
+/* Contenedor del texto con límite de altura */
+.text-preview-wrapper {
+    position: relative;
+    max-height: 120px; /* Muestra aprox. 4-5 líneas. Ajústalo a tu gusto */
+    overflow: hidden;
+    transition: max-height 0.4s ease; /* Animación de apertura suave */
+}
+
+/* Efecto de difuminado blanco al final del texto */
+.text-preview-wrapper::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Permite que el usuario pueda seleccionar texto detrás del difuminado */
+}
+
+/* Estado Expandido */
+.text-preview-wrapper.is-expanded {
+    max-height: 2000px; /* Un valor alto para asegurar que quepa toda la descripción */
+}
+
+/* Quitamos el difuminado cuando está abierto */
+.text-preview-wrapper.is-expanded::after {
+    opacity: 0;
+}
+
+/* Diseño del Botón */
+.btn-read-more {
+    background: none;
+    border: none;
+    color: var(--b2b-primary);
+    font-weight: 600;
+    padding: 0;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s ease;
+}
+
+.btn-read-more:hover {
+    color: #c41920; /* Tono más oscuro de tu rojo primario */
+    text-decoration: underline;
+}

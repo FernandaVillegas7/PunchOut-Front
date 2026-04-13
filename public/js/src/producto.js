@@ -23,20 +23,40 @@ let stockRealDisponible = 0; // NUEVO: Guardará el stock disponible del product
 // LÓGICA DE INVENTARIO Y SEMÁFORO
 // =====================================================================
 function consultarStock(codigoInterno) {
+    if(localStorage.getItem('sucursalID')){
+        askStock(codigoInterno);
+    } else {
+        $('#product-stock-status').html('<span class="text-muted"><i class="fas fa-spinner fa-spin mr-1"></i> Esperando ubicación...</span>');
+        $('#btAddCar').prop('disabled', true);
+
+        document.addEventListener('ubication', function(){
+            askStock(codigoInterno);
+        }, {once: true});
+    }
+}
+
+    function askStock(codigoInterno) {
+
+    const sucursalID = localStorage.getItem('sucursalID') || 1; // 1 por defecto (Apodaca)
+    const latUsuario = localStorage.getItem('latUsuario') || '';
+    const lonUsuario = localStorage.getItem('lonUsuario') || '';
+
     $('#product-stock-status').html('<span class="text-muted"><i class="fas fa-spinner fa-spin mr-1"></i> Consultando disponibilidad...</span>');
     // Bloqueamos el botón mientras consulta
     $('#btAddCar').prop('disabled', true); 
 
     $.ajax({
         type: "GET",
-        // Usamos 'articulo' para respetar la consistencia con tu controlador PHP
-        url: `app/api/exiros.php?method=ExirosStock&articulo=${encodeURIComponent(codigoInterno)}`,
+        url: `app/api/exiros.php?method=ExirosStock&articulo=${encodeURIComponent(codigoInterno)}&sucursalID=${sucursalID}&latUsuario=${latUsuario}&lonUsuario=${lonUsuario}`,
         dataType: "json",
         success: function (response) {
             if (response && !response.isError && response.data) {
                 stockRealDisponible = parseFloat(response.data.totalInventario) || 0;
+                const almacenConsultado = response.data.claveAlmace || "Desconocido";
+
             } else {
                 stockRealDisponible = 0;
+            
             }
             actualizarSemaforo();
         },
@@ -54,7 +74,7 @@ function actualizarSemaforo() {
 
     if (stockRealDisponible === 0) {
         // 🔴 ROJO: Sin inventario
-        $status.html(`<span class="badge px-3 py-2" style="background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; font-weight: 600;">
+         $status.html(`<span class="badge px-3 py-2" style="background-color: #fff3e0; color: #e65100; border: 1px solid #ffe082; font-weight: 600;">
             <i class="fas fa-times-circle mr-1"></i> Entregas de 2 a 5 días
         </span>`);
         $btnCart.prop('disabled', false).removeClass('is-success').html('Agregar de todos modos');
@@ -82,7 +102,6 @@ function actualizarSemaforo() {
 function cargarProducto() {
     let articulo = getUrlParam('articulo');
     if (!articulo) return;
-    console.log(`Cargando producto con artículo: ${articulo}`);
 
     const sid = getSessionID();
     
@@ -92,13 +111,69 @@ function cargarProducto() {
         dataType: "json",
         success: function (response) {
             if (response && response.data) {
-                console.log("Datos del producto obtenidos correctamente.");
-                console.log(response)
                 var p = response.data;
                 productoActual = p;
 
-                // 1. Rellenar campos principales (Títulos y Precios)
                 $('#product-img').attr('src', p.imagen).attr('alt', p.longName);
+                let urlBase = p.imagen;
+                let galeria = $('#contenedor-galeria'); 
+                galeria.empty();
+
+                galeria.append(`
+                    <img src="${urlBase}" 
+                         class="img-thumbnail m-1 shadow-sm" 
+                         style="width: 70px; height: 70px; object-fit: contain; cursor: pointer;"
+                         onclick="$('#product-img').attr('src', this.src);"
+                         alt="Vista Principal">
+                `);
+
+                function buscarImagenAdicional(numero){
+                    if (numero > 5) {
+                        //console.log("Limite de seguridad");
+                        return;
+                    }
+                    
+                    let urlPrueba = urlBase + '-' + numero;
+                    let imgTemp =  new Image();
+                    imgTemp.onload = function () {
+                        //console.log("Interaccion" +  numero + "-El ancho que recibe es " +  imgTemp.naturalWidth);
+                        if (imgTemp.naturalWidth === 1600) {
+                         //console.log("logo en la iteración de" + numero + "Deteniendo ciclo");
+                            return;
+                        }
+                    let imgHTML = `
+                        <img src="${urlPrueba}" 
+                             class="img-thumbnail m-1 shadow-sm" 
+                             style="width: 70px; height: 70px; object-fit: contain; cursor: pointer;"
+                             onerror="this.remove();" 
+                             onclick="$('#product-img').attr('src', this.src);" 
+                             alt="Vista ${numero}">
+                    `;
+                    galeria.append(imgHTML);   
+
+                    buscarImagenAdicional(numero + 1);
+                    };
+
+                    imgTemp.onerror = function(){
+                       // console.log("Fin de la galeria, se encontraron" + (numeo - 1) + "fotos adicionales");
+                    };
+                    imgTemp.src = urlPrueba;
+                }
+                buscarImagenAdicional(1);
+                // galeria.append(imgPrincipalHTML);
+
+                // [1, 2, 3].forEach(function(numero){
+                //     let urlAdicional = urlBase + '-' + numero;
+                //     let imgHTML = `
+                //         <img src="${urlAdicional}" 
+                //              class="img-thumbnail m-1 shadow-sm" 
+                //              style="width: 70px; height: 70px; object-fit: contain; cursor: pointer;"
+                //              onerror="this.remove();" 
+                //              onclick="$('#product-img').attr('src', this.src);" 
+                //              alt="Vista ${numero}">
+                //     `;
+                //     galeria.append(imgHTML);
+                // });
                 $('#product-longName, #product-longName-2').text(p.longName);
                 $('#product-manufacturer, #product-manufacturer-2').text(p.manufacturer);
                 $('#product-amount').text(p.amount);
@@ -135,84 +210,165 @@ function cargarProducto() {
                 if (p.longitud && p.longitud > 0) {
                     specsHtml += `<tr><th>Longitud</th><td>${p.longitud}</td></tr>`;
                 }
-
-                // Mensaje si no hay especificaciones adicionales registradas
                 if (specsHtml === '') {
                     specsHtml = '<tr><td colspan="2" class="text-center text-muted bg-white py-4">No hay especificaciones técnicas adicionales registradas.</td></tr>';
                 }
                 
                 $('#tabla-especificaciones').html(specsHtml);
-
-                // 4. Iniciar revelado por defecto de la sección de Detalles
                 $('#content-detalles').slideDown('fast');
-                $('#trigger-detalles').removeClass('collapsed'); // Flecha hacia arriba
-               //Precio original
-               // Guardamos el precio base unitario de forma segura
-                let precioBase = parseFloat(p.amount) || 0;
+                $('#trigger-detalles').removeClass('collapsed'); 
+             
+                let precioBaseOriginal = parseFloat(p.amount) || 0;
+                let escalasPromocion = [];
+
+                let promosApi = p.promocion || p.Promocion;
+                if (promosApi && promosApi.length > 0){
+                    escalasPromocion = promosApi.sort((a,b) => b.cantidadMinima - a.cantidadMinima);
+                    //Para el contenedor de promociones
+                let contenedorPromos = $('#contenedor-promociones');
+                contenedorPromos.empty();
+
+                // Ordenamos de menor a mayor para que el formato tipo planes se vea natural
+                let escalasVisuales = [...escalasPromocion].sort((a, b) => a.cantidadMinima - b.cantidadMinima);
+
+                // Marcamos una promo como destacada (por ejemplo la segunda, si existe)
+                let indicePopular = escalasVisuales.length > 1 ? 1 : 0;
+
+                let htmlPromos = `
+                    <div class="card border-success shadow-sm mt-2 mb-3">
+                        <div class="card-header bg-success text-white py-2">
+                            <h6 class="mb-0 fw-bold" style="font-size: 0.95rem;">
+                                <i class="fa fa-tags me-1"></i> Ahorra comprando por volumen
+                            </h6>
+                        </div>
+                        <div class="card-body p-3 bg-light">
+                            <div class="row g-3">
+                `;
+
+                escalasVisuales.forEach((promo, index) => {
+                    let esPopular = index === indicePopular;
+
+                    htmlPromos += `
+                        <div class="col-12 col-sm-6 col-lg-3 mt-3">
+                            <div class="card h-100 border ${esPopular ? 'border-danger shadow' : 'border-light shadow-sm'} rounded-4 position-relative">
+                                
+                                ${esPopular ? `
+                                    <span class="position-absolute top-0 start-50 translate-middle badge bg-danger rounded-pill px-3 py-2 shadow-sm"
+                                        style="font-size: 0.75rem; z-index: 2;">
+                                        Más popular
+                                    </span>
+                                ` : ''}
+
+                                <div class="card-body text-center px-3 py-4 bg-white rounded-4">
+                                    <div class="text-uppercase text-muted fw-semibold mb-2" 
+                                        style="font-size: 0.75rem; letter-spacing: 0.8px;">
+                                        ${promo.cantidadMinima}+ pzas
+                                    </div>
+
+                                    <h5 class="fw-bold mb-1 ${esPopular ? 'text-danger' : 'text-dark'}" style="font-size: 1.35rem;">
+                                        $${parseFloat(promo.precioPromocion).toFixed(2)}
+                                    </h5>
+
+                                    <div class="text-muted mb-3" style="font-size: 0.85rem;">
+                                        MXN c/u
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="button"
+                                                onclick="$('#totalProducto').val(${promo.cantidadMinima}).trigger('change');"
+                                                class="btn ${esPopular ? 'btn-danger shadow-sm' : 'btn-outline-success'} rounded-pill fw-semibold btn-seleccionar-promo"
+                                                style="font-size: 0.85rem; transition: all 0.2s;">
+                                            Agregar ${promo.cantidadMinima} pzas
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                htmlPromos += `
+                            </div>
+                            <div class="text-muted text-center mt-3" style="font-size: 0.8rem;">
+                                Todos los precios mostrados son antes del IVA
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                contenedorPromos.html(htmlPromos);
+                    
+
+                } else {
+                    $('#contenedor-promociones').empty();
+                }
+            
                 const actualizarPrecioTotal = (cantidad) => {
-                    // Validamos que no metan letras o números menores a 1
                     if (isNaN(cantidad) || cantidad < 1) {
                         cantidad = 1;
-                        $('#totalProducto').val(1); // Restauramos visualmente a 1
+                        $('#totalProducto').val(1);
                     }
-                    
-                    let precioTotal = precioBase * cantidad;
+                    let precioUnitarioActual = precioBaseOriginal;
+                    for(let escala of escalasPromocion){
+                        if(cantidad >= escala.cantidadMinima) {
+                            precioUnitarioActual = parseFloat(escala.precioPromocion);
+                            console.log(`¡Promoción aplicada! Compró ${cantidad}, el precio bajó a $${precioUnitarioActual} (Unidad: ${escala.unidadOriginal})`);
+                            break;
+                        }
+                    }
+                    let precioTotal = precioUnitarioActual * cantidad;
                     $('#product-amount').text(precioTotal.toFixed(2));
                     $('#input-precio').val(precioTotal.toFixed(2));
-                    actualizarSemaforo();
+                    if(typeof actualizarSemaforo === 'function'){
+                         actualizarSemaforo();
+                    }
                 };
 
                 // Suma
                 $('.btn-plus').off('click').on('click', function(e) {
-                    e.preventDefault(); // Evita que el botón recargue la página
+                    e.preventDefault(); 
                     
                     let valorBase = parseInt($('#totalProducto').val()) || 1;
                     let valorNuevo = valorBase + 1;
                     
                     $('#totalProducto').val(valorNuevo);
-                    
-                    // Actualizar el precio visual (Total)
-                    let precioTotal = precioBase * valorNuevo;
-                    $('#product-amount').text(precioTotal.toFixed(2));
-                    $('#input-precio').val(precioTotal.toFixed(2)); 
+
+                    actualizarPrecioTotal(valorNuevo);
                     
                 });
 
                 // Resta
                 $('.btn-minus').off('click').on('click', function(e) {
-                    e.preventDefault(); // Evita que el botón recargue la página
+                    e.preventDefault(); 
                     
                     let valorBase = parseInt($('#totalProducto').val()) || 1;
                     
-                    // Solo restamos si es mayor a 1 (no tiene sentido comprar 0 o menos)
                     if (valorBase > 1) {
                         let valorNuevo = valorBase - 1;
                         $('#totalProducto').val(valorNuevo);
                         
-                        // Actualizar el precio visual (Total)
-                        let precioTotal = precioBase * valorNuevo;
-                        $('#product-amount').text(precioTotal.toFixed(2));
-                        $('#input-precio').val(precioTotal.toFixed(2));
+                        actualizarPrecioTotal(valorNuevo);
                     }
                 });
 
                 //Prevenir recarga
                 $('#totalProducto').off('keydown change').on('keydown change', function(e) {
-                    // Si el evento es keydown y la tecla es "Enter" (código 13)
                     if (e.type === 'keydown' && e.which === 13) {
-                        e.preventDefault(); // Evitamos que el formulario haga submit
-                        $(this).blur(); // Quitamos el foco del input para que el usuario sienta que ya "terminó"
+                        e.preventDefault(); 
+                        $(this).blur(); 
                     }
                     
-                    // Si el evento es 'change' (ocurre al hacer blur o al terminar de editar)
-                    if (e.type === 'change') {
+                    if (e.type === 'change' || e.type === 'input') {
                         let valorNuevo = parseInt($(this).val());
-                        actualizarPrecioTotal(valorNuevo);
+                        if(!isNaN(valorNuevo)){
+                            actualizarPrecioTotal(valorNuevo);
+                        }
                     }
                 });
 
+                actualizarPrecioTotal(parseInt($('#totalProducto').val()) || 1);
                 $('#product-img')
-                    .css('cursor', 'zoom-in') // Cambia el puntero a una lupa para dar retroalimentación visual
+                    .css('cursor', 'zoom-in') 
                     .off('click').on('click', function() {
                         const imgSrc = $(this).attr('src');
                         
@@ -238,6 +394,7 @@ function cargarProducto() {
                         }
                     });
                     consultarStock(p.codigoInterno);
+                    cargarDescripcionLarga(articulo);
             } else {
                 $(".product-info-box").html("<div class='text-center text-muted py-5'><i class='fas fa-search fa-3x mb-3'></i><br>No se encontró el producto solicitado.</div>");
             }
@@ -250,22 +407,17 @@ function cargarProducto() {
     });
 }
 
-
-
-// =====================================================================
 // CARGA DE SUGERENCIAS (EQUIVALENTES Y COMPLEMENTARIOS)
-// =====================================================================
+
 function cargarSugerencias(articulo) {
     const sid = getSessionID();
     
     $.ajax({
         url: `app/api/exiros.php?method=ExirosSugerencias${sid ? `&SessionID=${encodeURIComponent(sid)}` : ''}`,
         type: 'GET',
-        data: { articulo: articulo, top: 5 }, // Traemos hasta 5 para que cuadren en la fila col-quinto
+        data: { articulo: articulo, top: 3 }, // Traemos hasta 5 para que cuadren en la fila col-quinto
         dataType: 'json',
         success: function(res) {
-            console.log("Respuesta de Sugerencias obtenida correctamente."); 
-            console.log(res);
             
             if (!res.isError && res.data && res.data.length > 0) {
                 // Filtramos por tipo soportando mayúsculas y minúsculas por serialización
@@ -294,7 +446,7 @@ function cargarSugerencias(articulo) {
                     containerEq.empty(); // Limpieza de seguridad
                     equivalentes.forEach(prod => {
                         // Usamos col-quinto definida en CSS de Twig para 5 por fila
-                        containerEq.append(crearTarjetaProducto(prod, 'col-lg-2 col-md-4 col-sm-6'));
+                        containerEq.append(crearTarjetaProducto(prod, 'col-lg-2 col-md-4 col-sm-4'));
                     });
                 }
             }
@@ -318,13 +470,13 @@ function crearTarjetaProducto(item, colsClasses) {
     const category = item.category || item.Category || '';
     const brand = item.manufacturer || item.Manufacturer || '';
     const description = item.longName || 'Especificaciones detalladas disponibles en la página del producto.';
-    console.log("El item es:" , item);
+  
     return `
     <div class="${colsClasses} pb-3">
         <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
             
             <div class="position-relative d-flex justify-content-center align-items-center" 
-                 style="height: 180px; padding: 1.5rem;">
+                 style="height: 100px; padding: 1.5rem;">
                 
                 <img class="img-fluid" src="${img}" alt="${name}" 
                      style="max-height: 100%; max-width: 100%; object-fit: contain; mix-blend-mode: multiply; filter: contrast(1.1);">
@@ -361,13 +513,56 @@ function crearTarjetaProducto(item, colsClasses) {
         </div>
     </div>`;
 }
-// =====================================================================
-// INICIALIZACIÓN Y EVENTOS DEL DOM
-// =====================================================================
+
+function cargarDescripcionLarga(codigoInterno) {
+   
+    $('#product-long-description').html('<span class="text-muted"><i class="fas fa-spinner fa-spin mr-1"></i> Cargando especificaciones detalladas...</span>');
+
+    $.ajax({
+        type: "GET",
+        // 2. Le pegamos a tu nuevo puente de PHP
+        url: `app/api/exiros.php?method=ExirosGetLongDescription&articulo=${encodeURIComponent(codigoInterno)}`,
+        dataType: "json",
+        success: function (response) {
+           
+            // 3. Validamos si hay error o si la data viene vacía (null)
+            if (!response || response.isError || !response.data) {
+                $('#product-long-description').html('<span class="text-muted">No hay especificaciones adicionales para este producto.</span>');
+                return;
+            }
+
+            // 4. Si todo está perfecto, pintamos el texto que vino de SQL Server
+            const descripcionLarga = response.data.descripcionLarga || '';
+            
+            
+            if (descripcionLarga.trim() === '') {
+                $('#product-long-description').html('<span class="text-muted">No hay especificaciones adicionales para este producto.</span>');
+            } else {
+                $('#product-long-description').text(descripcionLarga);
+            }
+        },
+        error: function () {
+            $('#product-long-description').html('<span class="text-muted">No se pudieron cargar las especificaciones en este momento.</span>');
+        }
+    });
+}
+
+function toggleReadMore(){
+    const wrapper = document.getElementById('desc-wrapper');
+    const btn = document.getElementById('btn-read-more');
+
+    wrapper.classList.toggle('is-expanded');
+    if(wrapper.classList.contains('is-expanded')){
+        btn.innerHTML = 'Ver menos <i class="fas fa-chevron-up"></i>';
+    } else {
+        btn.innerHTML = 'Ver más <i class="fas fa-chevron-down"></i>';
+    }
+}
+
 $(document).ready(function () {
     // 1. Cargar el producto y las sugerencias asíncronamente
     cargarProducto();
-    
+   
     const articuloActual = getUrlParam('articulo');
     if(articuloActual) {
         cargarSugerencias(articuloActual);
@@ -413,7 +608,7 @@ $(document).ready(function () {
         }).then(function (json) {
             if (json && !json.error) {
                 window.phpSessionID = sid;
-                console.log('PHP SessionID validado:', window.phpSessionID);
+                // console.log('PHP SessionID validado:', window.phpSessionID);
             } else {
                 console.warn('SessionID inválido:', json);
             }

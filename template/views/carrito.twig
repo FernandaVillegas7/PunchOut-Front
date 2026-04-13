@@ -21,11 +21,11 @@
     </h5>
     <div class="row px-xl-5">
         <div class="col-lg-8 table-responsive mb-3">
-            <div id="listaArticulos">
-               <div style="max-height: 25rem; overflow-y: auto;">
-                    <table class="table table-borderless table-hover text-center mb-0" id="tbListItems">
-                        <thead class="border sticky-top bg-white">
-                            <tr>
+            <div id="listaArticulos" class="shadow-sm bg-white rounded border border-light p-2">
+               <div style="max-height: 28rem; overflow-y: auto;" class="custom-scrollbar">
+                    <table class="table table-hover text-center mb-0 align-middle" id="tbListItems">
+                        <thead class="sticky-top bg-white border-bottom">
+                            <tr class="text-secondary" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
                                 <th class="d-none">ItemCarritoID</th>
                                 <th class="d-none">CarritoID</th>
                                 <th>Partida</th>
@@ -38,7 +38,7 @@
                             </tr>
                         </thead>
 
-                        <tbody id="extras" class="align-middle">
+                        <tbody id="extras" class="border-0">
                         </tbody>
                     </table>
                 </div>

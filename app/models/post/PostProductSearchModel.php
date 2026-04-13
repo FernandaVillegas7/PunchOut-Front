@@ -9,4 +9,6 @@ class PostProductSearchModel
     public int $sucursalID;
     public string $searchQuery;
     public array $categoriesID;
+    public ?float $latUsuario = null;
+    public ?float $lonUsuario = null;
 }

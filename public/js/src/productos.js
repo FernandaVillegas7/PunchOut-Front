@@ -15,12 +15,21 @@ document.addEventListener("DOMContentLoaded", function () {
 const searchObj = {
     pageSize: 10,
     pageNumber: 0,
-    sucursalID: 1,
+    sucursalID: localStorage.getItem('sucursalID') || 1, 
     searchQuery: "",
-    categoriesID: [0]
+    categoriesID: [0],
+    latUsuario: localStorage.getItem('latUsuario') || null,
+    lonUsuario: localStorage.getItem('lonUsuario') || null
 }
 
 function GetProductos() {
+
+    console.log("Enviando a la API:", {
+        SucursalID: searchObj.sucursalID,
+        Latitud: searchObj.latUsuario,
+        Longitud: searchObj.lonUsuario
+    });
+    
     $.ajax({
         type: "POST",
         url: `${apiProductos}Lista`,
@@ -80,4 +89,18 @@ function GetProductos() {
     })
 }
 
-GetProductos()
+if(localStorage.getItem('sucursalID')) {
+    GetProductos();
+} else {
+    document.addEventListener('ubication', function(){
+    
+    searchObj.sucursalID = localStorage.getItem('sucursalID');
+    searchObj.latUsuario = localStorage.getItem('latUsuario');
+    searchObj.lonUsuario = localStorage.getItem('lonUsuario');
+
+    GetProductos();
+    });
+    
+}
+
+

@@ -17,9 +17,55 @@ function renderCarrito(items) {
         let CodigoFabricante = item.supplierPartID
         let nombre = item.longName || item.shortName || '';
         let cantidad = item.quantity || 0;
-        let total = parseFloat(item.amountTotal || (cantidad * (parseFloat(item.amount || 0)))) || 0;
-        grandTotal += total;
+        let precioAplicado = parseFloat(item.amount || 0);
 
+        //Para el muestro del descuento
+        let grandTotalItems = parseFloat(item.amountTotal || (cantidad * precioAplicado)) || 0;
+        grandTotal += grandTotalItems
+        let total = parseFloat(item.amountTotal || (cantidad * (parseFloat(item.amount || 0)))) || 0;
+        grandTotal += grandTotalItems;
+        let precioBaseOriginal = parseFloat(item.amountBaseOriginal || 0);
+        let totalOriginalSinPromo = cantidad * precioBaseOriginal;
+
+        //Visual para el descuento
+        let vizDescuento = '';
+        let vizPrecioTotal= '';
+
+        let promos = item.promocion || item.Promocion;
+        if(promos && promos.length > 0){
+            let promosOrdenadas = [...promos].sort((a,b) => b.cantidadMinima - a.cantidadMinima);
+            for (let promo of promosOrdenadas){
+                if (cantidad >= promo.cantidadMinima) {
+                    vizDescuento = `
+                        <div class="mt-2 text-start">
+                            <span class="badge bg-danger rounded shadow-sm px-2 py-1" style="font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px; animation: pulse-promo 2s infinite;">
+                                <i class="fa fa-fire"></i> ¡OFERTA POR VOLUMEN!
+                            </span>
+                            <div class="text-danger small fw-bold mt-1">
+                                Compraste ${promo.cantidadMinima}+ piezas. (Precio Unit: ${formatMoney(precioAplicado)})
+                            </div>
+                        </div>`;
+
+                        let ahorroTotalRow = totalOriginalSinPromo - grandTotalItems;
+                        vizPrecioTotal = `
+                        <div class="text-end">
+                            <span class="text-muted text-decoration-line-through small d-block mb-1">${formatMoney(totalOriginalSinPromo)}</span>
+                            <span class="fw-bold text-danger fs-5 d-block">${formatMoney(grandTotalItems)}</span>
+                            <span class="text-success small fw-bold mt-1 d-block">
+                                Ahorraste ${formatMoney(ahorroTotalRow)}
+                            </span>
+                        </div>
+                    `;
+                    break;
+                }
+            }
+        }
+        if(vizPrecioTotal == ''){
+            vizPrecioTotal = `
+                <div class="text-end fw-bold text-dark fs-6">${formatMoney(grandTotalItems)}</div>
+            `;
+        }
+        
         // Build dynamic image URL: clave = supplierPartID, img = codigo (fallbacks)
         const claveImg = item.supplierPartID || item.supplierPartAuxiliaryID || item.buyerPartID || '';
         const dynImg = (claveImg && codigo)
@@ -27,23 +73,47 @@ function renderCarrito(items) {
             : (item.imagen || '');
 
         rows += `
-            <tr>
-                <td class="d-none">${partida}</td>
+            <tr class="${vizDescuento !== '' ? 'table-warning-bg' : ''}"> <td class="d-none">${partida}</td>
                 <td class="d-none">${codigo}</td>
-                <td>${partida}</td>
-                <td>${CodigoFabricante}</td>
-                <td><img src="${dynImg}" alt="" style="width:48px;height:48px;object-fit:cover;"></td>
-                <td class="text-left">${nombre}<br><small>${item.manufacturer || ''}</small></td>
-                <td>${cantidad}</td>
-                <td class="border">${formatMoney(total)}</td>
+                <td class="text-muted fw-bold">${partida}</td>
+                
+                <td><span class="badge bg-light text-dark border border-secondary">${CodigoFabricante}</span></td>
+                
                 <td>
-                    <button class="btn btn-sm btn-outline-danger btn-remove-item" data-codigo="${codigo}">Eliminar</button>
+                    <img src="${dynImg}" alt="${nombre}" class="rounded shadow-sm border" style="width:55px; height:55px; object-fit:contain; background:#fff;">
+                </td>
+                
+                <td class="text-start">
+                    <span class="d-block fw-bold text-dark" style="font-size: 0.9rem; max-width: 250px; white-space: normal;">${nombre}</span>
+                    <small class="text-muted">${item.manufacturer || ''}</small>
+                    ${vizDescuento}
+                </td>
+                
+                <td>
+                    <span class="fw-bold fs-6">${cantidad}</span>
+                </td>
+                
+                <td>
+                    ${vizPrecioTotal}
+                </td>
+                
+                <td>
+                    <button class="btn btn-sm btn-link text-danger btn-remove-item rounded-circle" data-codigo="${codigo}" title="Eliminar artículo" style="width: 32px; height: 32px; padding: 0;">
+                        <i class="fa fa-trash fs-5"></i>
+                    </button>
                 </td>
             </tr>`;
     });
 
     if (!items || items.length === 0) {
-        rows = '<tr><td colspan="9">No hay artículos en el carrito</td></tr>';
+        rows = `
+            <tr>
+                <td colspan="10" class="text-center py-5">
+                    <i class="fa fa-shopping-cart fa-3x text-light mb-3"></i>
+                    <h5 class="text-muted">Tu carrito está vacío</h5>
+                    <p class="text-muted small">¡Explora nuestra tienda y descubre grandes ofertas!</p>
+                </td>
+            </tr>`;
     }
 
     $tbody.html(rows);

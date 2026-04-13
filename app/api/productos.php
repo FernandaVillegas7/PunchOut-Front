@@ -11,13 +11,14 @@ $controll = new ProductosController();
 //hola mundo
 try {
 
-    // if($requestMethod == 'POST'){
-    //     if($method === 'Lista'){
-    //         $data = $mapper->mapObjectFromString($input, new PostProductSearchModel());
-    //         $response = $controll->getRemProductos($data);
-    //         $response->showResponse();
-    //     }
-
+    if($requestMethod == 'POST'){
+        if($method === 'Lista'){
+            $data = $mapper->mapObjectFromString($input, new PostProductSearchModel());
+            $response = $controll->getRemProductos($data);
+            $response->showResponse();
+       }
+    }
+    
     //     if($method === 'infity'){
     //         $data = $mapper->mapObjectFromString($input, new PostProductSearchModel());
     //         $response = $controll->getRemProductos($data);

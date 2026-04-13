@@ -61,6 +61,9 @@ if (sessionId) {
 }
 
 function renderProductItem(p) {
+    let promosApi = p.promocion || p.Promocion;
+    let badgePromo = getPromos(promosApi);
+    console.log("Las promociones:", badgePromo);
     return `
     <div class="col-12 mb-3 product-card" data-articulo="${p.supplierPartAuxiliaryID}">
         <div class="product-item bg-light">
@@ -87,6 +90,8 @@ function renderProductItem(p) {
                         <div class="d-flex align-items-center justify-content-between mt-auto pt-2 pt-md-3">
                             <h6 class="text-dark mb-0">$${p.amount} ${p.currency}</h6>
                             <div class="d-flex align-items-center">
+                        ${badgePromo}
+
                                 <div class="input-group input-group-sm me-2 quantity-control" style="width:120px;">
                                     <button class="btn btn-outline-secondary btn-sm btn-decrement" type="button">-</button>
                                     <input type="number" min="1" value="1" class="form-control form-control-sm quantity-input" aria-label="Cantidad" style="text-align:center;" />
@@ -106,6 +111,7 @@ function renderProductItem(p) {
     </div>
     `;
 }
+
 
 // Función para cargar productos con reintentos automáticos
 function fetchProducts(page, append = false) {
@@ -217,6 +223,23 @@ function setSearchLoading(on) {
     } catch (e) { /* silent */ }
 }
 
+
+//Para cargar las promociones
+
+function getPromos(promociones){
+    if(!promociones || promociones.length === 0){
+        return '';
+    }
+
+    let promosOrdenadas = [...promociones].sort((a, b) => a.cantidadMinima - b.cantidadMinima);
+    let primeraPromo = promosOrdenadas [0];
+
+    return `
+            <span class="badge bg-danger rounded-pill shadow px-2 py-1" style="font-size: 0.70rem; letter-spacing: 0.5px; animation: pulse-promo 2s infinite;">
+                <i class="fa fa-check-circle"></i> Descuento a partir de ${primeraPromo.cantidadMinima} pzas
+            </span>
+    `;
+}
 // Inicialización al cargar la página
 $(document).ready(function () {
     // Carga inicial de productos
@@ -538,3 +561,4 @@ style.innerHTML = `
 document.head.appendChild(style);
 
  }
+

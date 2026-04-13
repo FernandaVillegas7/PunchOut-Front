@@ -123,8 +123,15 @@ try {
             if ($requestMethod === 'GET') {
                
                 $articulo = $_GET['articulo'] ?? '';
+                $sucursalID = isset($_GET['sucursalID']) ? (int)$_GET['sucursalID'] : 1;
                 
-                $result = $controller->ExirosStock($articulo);
+                $latUsuario = (isset($_GET['latUsuario']) && $_GET['latUsuario'] !== 'null' && $_GET['latUsuario'] !== '') 
+                              ? (float)$_GET['latUsuario'] : null;
+                              
+                $lonUsuario = (isset($_GET['lonUsuario']) && $_GET['lonUsuario'] !== 'null' && $_GET['lonUsuario'] !== '') 
+                              ? (float)$_GET['lonUsuario'] : null;
+                
+                $result = $controller->ExirosStock($articulo, $sucursalID, $latUsuario, $lonUsuario);
                 
                 header('Content-Type: application/json; charset=UTF-8');
                 echo json_encode($result);
@@ -266,7 +273,24 @@ try {
             }
             break;
             
-        
+        case 'ExirosGetLongDescription':
+            // Usamos $_SERVER directo para que no falle sin importar cómo se llamen tus variables
+            if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                $articulo = $_GET['articulo'] ?? '';
+                
+                // Asegúrate de que la variable de tu controlador se llame así ($controller, $exirosController, etc.)
+                $result = $controller->ExirosGetLongDescription($articulo);
+                
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode($result);
+                exit;
+            } else {
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(["error" => true, "message" => "Método HTTP no permitido para esta ruta"]);
+                exit;
+            }
+            break;
+            
         case 'ExirosGetCategorias':
 
             // Controller method does not expect external $data; call without arguments

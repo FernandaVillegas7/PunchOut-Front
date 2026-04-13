@@ -429,21 +429,20 @@ class ExirosController extends BaseController
         ];
     }
 
-    public function InsertArticulo(array $data)
+ public function InsertArticulo(array $data)
     {
-        // Verificar si la sesión ya está activa antes de iniciarla
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        // Validar que exista SessionID de PunchOut
         $sessionID = $_SESSION['SessionID'] ?? null;
         if (empty($sessionID)) {
             $this->setResponse(true, HTTP_UNAUTHORIZED, 'SessionID de PunchOut no válido o no encontrado')->showResponse();
         }
 
-        $cantidad = isset($data['cantidad']) ? (int)$data['cantidad'] : 0;
-        $codigoInterno = $data['codigoInterno'] ?? '';
+        $cantidad = isset($data['totalProducto']) ? (int)$data['totalProducto'] : (isset($data['cantidad']) ? (int)$data['cantidad'] : 0);
+        $codigoInterno = $data['producto'] ?? ($data['codigoInterno'] ?? '');
+
         if ($cantidad <= 0 || empty($codigoInterno)) {
             $this->setResponse(true, HTTP_BAD_REQUEST, 'Cantidad y Código de Artículo son requeridos y deben ser válidos')->showResponse();
         }
@@ -466,14 +465,44 @@ class ExirosController extends BaseController
 
         $producto = $decodedResponse['data'];
         $producto['quantity'] = $cantidad;
-        $producto['amountTotal'] = $cantidad * (float)$producto['amount'];
+        $producto['amountBaseOriginal'] = (float)$producto['amount'];
+       
+        $precioSeguro = isset($producto['amount']) ? (float)$producto['amount'] : 0;
+        
+        $promociones = [];
+        if (isset($producto['promocion']) && is_array($producto['promocion'])) {
+            $promociones = $producto['promocion'];
+        } elseif (isset($producto['Promocion']) && is_array($producto['Promocion'])) {
+            $promociones = $producto['Promocion'];
+        }
 
-        // Inicializa el carrito si no existe
+        if (count($promociones) > 0) {
+            // usort protegido contra nulos o índices faltantes
+            usort($promociones, function($a, $b) {
+                $cantA = isset($a['cantidadMinima']) ? (int)$a['cantidadMinima'] : 0;
+                $cantB = isset($b['cantidadMinima']) ? (int)$b['cantidadMinima'] : 0;
+                return $cantB <=> $cantA;
+            });
+
+            foreach ($promociones as $escala) {
+                $cantMinima = isset($escala['cantidadMinima']) ? (int)$escala['cantidadMinima'] : 0;
+                
+                if ($cantMinima > 0 && $cantidad >= $cantMinima) {
+                    if (isset($escala['precioPromocion'])) {
+                        $precioSeguro = (float)$escala['precioPromocion'];
+                        break; // Descuento encontrado y aplicado
+                    }
+                }
+            }
+        }
+
+        $producto['amount'] = $precioSeguro;
+        $producto['amountTotal'] = $cantidad * $precioSeguro;
+
         if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
             $_SESSION['carrito'] = [];
         }
 
-        // Usa codigoInterno como clave única
         $_SESSION['carrito'][$codigoInterno] = $producto;
 
         $this->setResponse(false, HTTP_OK, 'Item insertado en el carrito', [
@@ -831,7 +860,7 @@ class ExirosController extends BaseController
         ];
     }
     
-    public function ExirosStock($articulo)
+   public function ExirosStock($articulo, $sucursalID, $latUsuario, $lonUsuario)
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -847,16 +876,26 @@ class ExirosController extends BaseController
         $apiKey = $this->getXApiKey();
         
         try {
-            // Nota de Arquitectura: El front envía '$articulo', 
-            // pero lo empaquetamos como 'codigoInterno' porque así lo exige tu endpoint de C#
-            $data = ['codigoInterno' => $articulo];
+            // 1. Empaquetamos SÓLO las variables obligatorias en el modelo que ya usas
+            $data = [
+                'codigoInterno' => $articulo,
+                'sucursalID' => $sucursalID
+            ];
             
-            // Usamos tu helper con un alias para la ruta ('exiros-stock')
+            // 2. Si el usuario permitió el GPS, inyectamos las coordenadas al arreglo como texto
+            if ($latUsuario !== null && $lonUsuario !== null) {
+                $data['latUsuario'] = (string)$latUsuario;
+                $data['lonUsuario'] = (string)$lonUsuario;
+            }
+            
+            // 3. Usamos tu helper EXACTAMENTE como lo tenías.
+            // Al no tener valores 'null', callApi podrá armar la URL perfectamente.
             $response = callApi('exiros-stock', $data, [
                 'routes' => $routes,
                 'apiKey' => $apiKey,
                 'method' => 'GET' 
             ]);
+            
         } catch (\Exception $e) {
             $this->setResponse(true, HTTP_INTERNAL_SERVER_ERROR, $e->getMessage())->showResponse();
         }
@@ -869,10 +908,41 @@ class ExirosController extends BaseController
 
         return [
             'isError' => false,
+            // Tomamos el mensaje real que venga de C# para saber que sí se conectó
             'message' => $decodedResponse['message'] ?? 'Consulta de stock exitosa',
-            // Si por alguna razón la data viene vacía, retornamos null de forma segura
             'data'    => $decodedResponse['data'] ?? null 
         ];
+    }
+
+   public function ExirosGetLongDescription($articulo)
+    {
+         $routes = $this->getApiRutes();
+         $apiKey = $this->getXApiKey();
+
+         if(!isset($routes['exiros-long-description'])) {
+             $routes['exiros-long-description'] = $routes['doper'] . 'ExirosGetLongDescription';
+         }
+
+         try {
+            $data = [
+                'articulo' => $articulo
+            ];  
+            $response = callApi('exiros-long-description', $data, [
+                'routes' => $routes,
+                'apiKey' => $apiKey, 
+                'method' => 'GET'
+            ]);
+         } catch (\Exception $e) {
+            $this->setResponse(true, HTTP_INTERNAL_SERVER_ERROR, $e->getMessage())->showResponse();
+         }
+         
+         $decodedResponse = json_decode($response, true);
+         
+         return [
+            'isError' => $decodedResponse['isError'] ?? false,
+            'message' => $decodedResponse['message'] ?? 'Consultado',
+            'data' => $decodedResponse['data'] ?? null
+         ];
     }
 }
 
